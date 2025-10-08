@@ -1,38 +1,10 @@
-import { ArrowUpRightIcon, FolderIcon as IconFolderCode } from 'lucide-react';
-
-import { Button } from '@/components/ui/button';
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@/components/ui/empty';
+import { RecipeList } from '@/components/recipes/RecipeList';
 
 export default function Home() {
   return (
-    <Empty>
-      <EmptyHeader>
-        <EmptyMedia className="" variant="icon">
-          <IconFolderCode />
-        </EmptyMedia>
-        <EmptyTitle>No Projects Yet</EmptyTitle>
-        <EmptyDescription>
-          You haven&apos;t created any projects yet. Get started by creating your first project.
-        </EmptyDescription>
-      </EmptyHeader>
-      <EmptyContent>
-        <div className="flex gap-2">
-          <Button>Create Project</Button>
-          <Button variant="outline">Import Project</Button>
-        </div>
-      </EmptyContent>
-      <Button variant="link" asChild className="text-muted-foreground" size="sm">
-        <a href="#">
-          Learn More <ArrowUpRightIcon />
-        </a>
-      </Button>
-    </Empty>
+    <main className="container mx-auto py-10 px-4">
+      <h1 className="text-3xl font-bold mb-6">Recettes publiées</h1>
+      <RecipeList />
+    </main>
   );
 }

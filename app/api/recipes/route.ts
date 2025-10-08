@@ -1,3 +1,4 @@
+import { recipeToListItem } from '@/lib/adapters/recipeAdapter';
 import { prisma } from '@/lib/prisma';
 import { recipeSchema } from '@/lib/validations/recipe';
 import { getServerSession } from 'next-auth';
@@ -13,10 +14,7 @@ export async function GET(req: Request) {
     const session = await getServerSession(authOptions);
     const currentUserId = session?.user?.id;
 
-    const where: {
-      authorId?: string;
-      isPublic?: boolean;
-    } = {};
+    const where: { authorId?: string; isPublic?: boolean } = {};
 
     if (userId) {
       where.authorId = userId;
@@ -39,11 +37,18 @@ export async function GET(req: Request) {
 
     const recipes = await prisma.recipe.findMany({
       where,
-      include: { author: { select: { username: true, firstName: true, lastName: true } } },
+      include: {
+        difficulty: true,
+        duration: true,
+        tags: { include: { tag: true } },
+        author: { select: { username: true, firstName: true, lastName: true } },
+      },
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json(recipes);
+    const formatted = recipes.map(recipeToListItem);
+
+    return NextResponse.json(formatted);
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
