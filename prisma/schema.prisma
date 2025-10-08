@@ -1,0 +1,120 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String     @id @default(cuid())
+  email         String     @unique
+  username      String     @unique
+  passwordHash  String
+  firstName     String?
+  lastName      String?
+  createdAt     DateTime   @default(now())
+
+  recipes       Recipe[]   @relation("authorRecipes")
+  favorites     Favorite[]
+
+  sessions      Session[]
+}
+
+model Recipe {
+  id           String       @id @default(cuid())
+  title        String
+  description  String?
+  difficulty   Difficulty    @relation(fields: [difficultyId], references: [id])
+  difficultyId String
+  duration     Duration      @relation(fields: [durationId], references: [id])
+  durationId   String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  isPublic     Boolean       @default(false)
+
+  authorId     String
+  author       User          @relation("authorRecipes", fields: [authorId], references: [id])
+
+  ingredients  Ingredient[]
+  steps        Step[]
+  images       Image[]
+  tags         RecipeTag[]
+  favorites    Favorite[]
+}
+
+model Ingredient {
+  id        String  @id @default(cuid())
+  name      String
+  quantity  String?
+  recipeId  String
+  recipe    Recipe  @relation(fields: [recipeId], references: [id])
+}
+
+model Step {
+  id        String  @id @default(cuid())
+  order     Int
+  content   String
+  recipeId  String
+  recipe    Recipe  @relation(fields: [recipeId], references: [id])
+}
+
+model Image {
+  id        String  @id @default(cuid())
+  url       String
+  recipeId  String
+  recipe    Recipe  @relation(fields: [recipeId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Tag {
+  id    String      @id @default(cuid())
+  name  String      @unique
+  recipes RecipeTag[]
+}
+
+model RecipeTag {
+  id       String  @id @default(cuid())
+  recipe   Recipe  @relation(fields: [recipeId], references: [id])
+  recipeId String
+  tag      Tag     @relation(fields: [tagId], references: [id])
+  tagId    String
+}
+
+model Difficulty {
+  id    String   @id @default(cuid())
+  name  String   @unique
+  recipes Recipe[]
+}
+
+model Duration {
+  id    String   @id @default(cuid())
+  name  String   @unique
+  recipes Recipe[]
+}
+
+model Favorite {
+  id        String  @id @default(cuid())
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String
+  recipe    Recipe  @relation(fields: [recipeId], references: [id])
+  recipeId  String
+  createdAt DateTime @default(now())
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  sessionToken String @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  expires   DateTime
+}
