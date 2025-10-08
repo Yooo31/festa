@@ -22,6 +22,7 @@ export const recipeSchema = z.object({
     )
     .nonempty('Ajoutez au moins une étape.'),
   tags: z.array(z.string()).optional(),
+  images: z.array(z.string().url()).optional(),
   isPublic: z.boolean().optional().default(false),
 });
 

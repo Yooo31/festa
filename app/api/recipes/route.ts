@@ -1,8 +1,8 @@
+import { formatResponse } from '@/lib/adapters';
 import { recipeToListItem } from '@/lib/adapters/recipeAdapter';
 import { prisma } from '@/lib/prisma';
 import { recipeSchema } from '@/lib/validations/recipe';
 import { getServerSession } from 'next-auth';
-import { NextResponse } from 'next/server';
 import { authOptions } from '../auth/[...nextauth]/route';
 
 export async function GET(req: Request) {
@@ -21,11 +21,11 @@ export async function GET(req: Request) {
 
       if (pubParam === 'all') {
         if (!currentUserId || currentUserId !== userId) {
-          return NextResponse.json([], { status: 200 });
+          return formatResponse([], 200);
         }
       } else if (pubParam === 'false') {
         if (!currentUserId || currentUserId !== userId) {
-          return NextResponse.json([], { status: 200 });
+          return formatResponse([], 200);
         }
         where.isPublic = false;
       } else {
@@ -41,6 +41,7 @@ export async function GET(req: Request) {
         difficulty: true,
         duration: true,
         tags: { include: { tag: true } },
+        images: true,
         author: { select: { username: true, firstName: true, lastName: true } },
       },
       orderBy: { createdAt: 'desc' },
@@ -48,10 +49,10 @@ export async function GET(req: Request) {
 
     const formatted = recipes.map(recipeToListItem);
 
-    return NextResponse.json(formatted);
+    return formatResponse(formatted, 200);
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
+    return formatResponse({ error: 'Erreur serveur' }, 500);
   }
 }
 
@@ -59,18 +60,27 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+      return formatResponse({ error: 'Non autorisé' }, 401);
     }
 
     const body = await req.json();
     const parsed = recipeSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json({ error: parsed.error.format() }, { status: 400 });
+      return formatResponse({ error: parsed.error.format() }, 400);
     }
 
-    const { title, description, isPublic, difficultyId, durationId, ingredients, steps, tags } =
-      parsed.data;
+    const {
+      title,
+      description,
+      isPublic,
+      difficultyId,
+      durationId,
+      ingredients,
+      steps,
+      tags,
+      images,
+    } = parsed.data;
 
     const recipe = await prisma.recipe.create({
       data: {
@@ -93,17 +103,24 @@ export async function POST(req: Request) {
               })),
             }
           : undefined,
+        images: images
+          ? {
+              create: images.map((url) => ({ url })),
+            }
+          : undefined,
       },
       include: {
-        ingredients: true,
-        steps: true,
+        difficulty: true,
+        duration: true,
         tags: { include: { tag: true } },
+        author: { select: { username: true, firstName: true, lastName: true } },
+        images: true,
       },
     });
 
-    return NextResponse.json(recipe, { status: 201 });
+    return formatResponse(recipeToListItem(recipe), 201);
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
+    return formatResponse({ error: 'Erreur serveur' }, 500);
   }
 }

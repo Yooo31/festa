@@ -5,5 +5,6 @@ export interface RecipeListItem {
   difficulty: string;
   duration: string;
   tags: string[];
+  images: string[];
   author: string;
 }
