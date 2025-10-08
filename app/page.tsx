@@ -1,6 +1,6 @@
-import { ArrowUpRightIcon, FolderIcon as IconFolderCode } from "lucide-react"
+import { ArrowUpRightIcon, FolderIcon as IconFolderCode } from 'lucide-react';
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button';
 import {
   Empty,
   EmptyContent,
@@ -8,19 +8,18 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@/components/ui/empty"
+} from '@/components/ui/empty';
 
 export default function Home() {
   return (
     <Empty>
       <EmptyHeader>
-        <EmptyMedia variant="icon">
+        <EmptyMedia className="" variant="icon">
           <IconFolderCode />
         </EmptyMedia>
         <EmptyTitle>No Projects Yet</EmptyTitle>
         <EmptyDescription>
-          You haven&apos;t created any projects yet. Get started by creating
-          your first project.
+          You haven&apos;t created any projects yet. Get started by creating your first project.
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
@@ -29,16 +28,11 @@ export default function Home() {
           <Button variant="outline">Import Project</Button>
         </div>
       </EmptyContent>
-      <Button
-        variant="link"
-        asChild
-        className="text-muted-foreground"
-        size="sm"
-      >
+      <Button variant="link" asChild className="text-muted-foreground" size="sm">
         <a href="#">
           Learn More <ArrowUpRightIcon />
         </a>
       </Button>
     </Empty>
-  )
+  );
 }
