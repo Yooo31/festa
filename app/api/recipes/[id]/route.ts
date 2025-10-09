@@ -1,3 +1,4 @@
+import { recipeToDetailedItem } from '@/lib/adapters/recipeAdapter';
 import { prisma } from '@/lib/prisma';
 import { recipeSchema } from '@/lib/validations/recipe';
 import { getServerSession } from 'next-auth';
@@ -11,22 +12,32 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
 
     const recipe = await prisma.recipe.findUnique({
       where: { id: params.id },
-      include: { author: { select: { username: true, firstName: true, lastName: true } } },
+      include: {
+        author: { select: { username: true, firstName: true, lastName: true } },
+        difficulty: true,
+        duration: true,
+        ingredients: true,
+        steps: true,
+        tags: { include: { tag: true } },
+        images: true,
+      },
     });
 
     if (!recipe) {
       return NextResponse.json({ error: 'Recette introuvable' }, { status: 404 });
     }
 
+    const formattedRecipe = recipeToDetailedItem(recipe);
+
     if (recipe.isPublic) {
-      return NextResponse.json(recipe);
+      return NextResponse.json(formattedRecipe);
     }
 
     if (!currentUserId || recipe.authorId !== currentUserId) {
       return NextResponse.json({ error: 'Recette privée' }, { status: 403 });
     }
 
-    return NextResponse.json(recipe);
+    return NextResponse.json(formattedRecipe);
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });

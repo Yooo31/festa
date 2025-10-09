@@ -5,14 +5,24 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Clock, Star, Heart, ChefHat } from 'lucide-react';
-import { mockRecipes } from '@/lib/mock-data';
 
-export default function RecipePage({ params }: { params: { id: string } }) {
-  const recipe = mockRecipes.find((r) => r.id === params.id);
+import type { Recipe, Step } from '@/lib/types/recipe';
 
-  if (!recipe) {
-    notFound();
+export default async function RecipePage({ params }: { params: { id: string } }) {
+  const recipeId = params.id;
+
+  const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/recipes/${recipeId}`);
+
+  if (!response.ok) {
+    if (response.status === 404 || response.status === 403) {
+      notFound();
+    }
+
+    throw new Error(`Erreur lors de la récupération de la recette: ${response.statusText}`);
   }
+
+  const recipe: Recipe & { steps: Step[] } = await response.json();
+  console.log(recipe.images);
 
   return (
     <div className="min-h-screen bg-background">
@@ -20,7 +30,6 @@ export default function RecipePage({ params }: { params: { id: string } }) {
 
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-5xl mx-auto space-y-8">
-          {/* Header */}
           <div className="space-y-4">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 space-y-2">
@@ -62,7 +71,6 @@ export default function RecipePage({ params }: { params: { id: string } }) {
             </p>
           </div>
 
-          {/* Image */}
           <div className="relative aspect-[16/9] rounded-xl overflow-hidden">
             <Image
               src={`/uploads/${recipe.images[0]}` || '/placeholder.svg'}
@@ -75,7 +83,6 @@ export default function RecipePage({ params }: { params: { id: string } }) {
           </div>
 
           <div className="grid md:grid-cols-[1fr_2fr] gap-8">
-            {/* Ingredients */}
             <Card>
               <CardHeader>
                 <CardTitle>Ingrédients</CardTitle>
@@ -94,21 +101,22 @@ export default function RecipePage({ params }: { params: { id: string } }) {
               </CardContent>
             </Card>
 
-            {/* Steps */}
             <Card>
               <CardHeader>
                 <CardTitle>Préparation</CardTitle>
               </CardHeader>
               <CardContent>
                 <ol className="space-y-4">
-                  {recipe.steps.map((step, index) => (
-                    <li key={index} className="flex gap-4">
-                      <span className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground font-semibold shrink-0">
-                        {index + 1}
-                      </span>
-                      <p className="flex-1 pt-1 text-pretty">{step}</p>
-                    </li>
-                  ))}
+                  {recipe.steps
+                    .sort((a, b) => a.order - b.order)
+                    .map((step) => (
+                      <li key={step.order} className="flex gap-4">
+                        <span className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-primary-foreground font-semibold shrink-0">
+                          {step.order}
+                        </span>
+                        <p className="flex-1 pt-1 text-pretty">{step.content}</p>
+                      </li>
+                    ))}
                 </ol>
               </CardContent>
             </Card>

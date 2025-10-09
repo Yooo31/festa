@@ -3,7 +3,6 @@ import { RecipeCardCompact } from '@/components/recipes/RecipeCardCompact';
 import { mockRecipes } from '@/lib/mock-data';
 
 export default function FavoritesPage() {
-  // Simuler les recettes favorites
   const favoriteRecipes = mockRecipes.slice(0, 4);
 
   return (
