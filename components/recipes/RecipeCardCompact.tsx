@@ -10,7 +10,6 @@ interface RecipeCardCompactProps {
 }
 
 export function RecipeCardCompact({ recipe }: RecipeCardCompactProps) {
-  console.log('Rendering RecipeCardCompact for recipe:', recipe.images[0]);
   return (
     <Link href={`/recipes/${recipe.id}`}>
       <Card className="overflow-hidden hover:shadow-lg transition-shadow">

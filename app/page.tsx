@@ -17,7 +17,6 @@ type Meta = {
 };
 
 export default function Home() {
-  // --- États ---
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [meta, setMeta] = useState<Meta | null>(null);
   const [loading, setLoading] = useState(true);
@@ -28,12 +27,10 @@ export default function Home() {
     tags: [],
   });
 
-  // --- Récupération des données ---
   useEffect(() => {
     const fetchInitialData = async () => {
       setLoading(true);
       try {
-        // On lance les deux appels en parallèle pour plus d'efficacité
         const [recipesRes, metaRes] = await Promise.all([
           fetch('/api/recipes'),
           fetch('/api/meta'),
@@ -47,7 +44,7 @@ export default function Home() {
         setMeta(await metaRes.json());
       } catch (err) {
         console.error(err);
-        setRecipes([]); // En cas d'erreur, on affiche une liste vide
+        setRecipes([]);
         setMeta({ difficulties: [], durations: [], tags: [] });
       } finally {
         setLoading(false);
@@ -57,17 +54,15 @@ export default function Home() {
     fetchInitialData();
   }, []);
 
-  // --- Logique de filtrage (côté client) ---
   const filteredRecipes = recipes.filter((recipe) => {
-    // Difficulté
     if (filters.difficulty !== 'all' && recipe.difficulty.toLowerCase() !== filters.difficulty) {
       return false;
     }
-    // Durée (Note: à adapter si la logique est plus complexe)
+
     if (filters.duration !== 'all' && recipe.duration !== filters.duration) {
       return false;
     }
-    // Tags
+
     if (filters.tags.length > 0) {
       if (!filters.tags.some((tag) => recipe.tags.includes(tag))) {
         return false;
@@ -76,7 +71,6 @@ export default function Home() {
     return true;
   });
 
-  // --- Rendu ---
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -101,7 +95,6 @@ export default function Home() {
             <h1 className="text-4xl font-bold tracking-tight">Découvrez nos recettes</h1>
             <ViewToggle view={view} onViewChange={setView} />
           </div>
-          {/* On passe les données meta au composant de filtres */}
           {meta && (
             <RecipeFilters
               onFilterChange={setFilters}
@@ -116,7 +109,7 @@ export default function Home() {
             {filteredRecipes.length} recette{filteredRecipes.length !== 1 ? 's' : ''} trouvée
             {filteredRecipes.length !== 1 ? 's' : ''}
           </p>
-          {/* Logique d'affichage des cartes */}
+
           {filteredRecipes.length > 0 ? (
             view === 'grid' ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
