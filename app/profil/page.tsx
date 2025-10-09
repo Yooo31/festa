@@ -1,14 +1,152 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
+
 import { Navigation } from '@/components/common/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, BookOpen, Heart, Settings } from 'lucide-react';
 import { RecipeCardCompact } from '@/components/recipes/RecipeCardCompact';
-import { mockRecipes } from '@/lib/mock-data';
+import { Skeleton } from '@/components/ui/skeleton';
+import type { Recipe } from '@/lib/types/recipe';
+
+type UserRecipes = {
+  all: Recipe[];
+  public: Recipe[];
+  private: Recipe[];
+};
 
 export default function AccountPage() {
-  // Simuler les recettes de l'utilisateur
-  const userRecipes = mockRecipes.slice(0, 3);
+  const { data: session, status } = useSession();
+
+  const userId = session?.user?.id;
+
+  const [recipes, setRecipes] = useState<UserRecipes>({
+    all: [],
+    public: [],
+    private: [],
+  });
+  const [loadingRecipes, setLoadingRecipes] = useState(false);
+
+  const recipeCount = recipes.all.length;
+  const favoriteCount = 48;
+  const followersCount = 234;
+
+  useEffect(() => {
+    if (status === 'loading') {
+      return;
+    }
+
+    if (!userId) {
+      return;
+    }
+
+    const fetchUserRecipes = async () => {
+      setLoadingRecipes(true);
+      try {
+        const allRecipesRes = await fetch(`/api/recipes?user=${userId}&public=all`);
+        const privateRecipesRes = await fetch(`/api/recipes?user=${userId}&public=false`);
+
+        if (!allRecipesRes.ok || !privateRecipesRes.ok) {
+          throw new Error('Erreur lors de la récupération des recettes utilisateur');
+        }
+
+        const allRecipes: Recipe[] = await allRecipesRes.json();
+        const privateRecipes: Recipe[] = await privateRecipesRes.json();
+        const publicRecipes = allRecipes.filter(
+          (recipe) => !privateRecipes.some((priv) => priv.id === recipe.id),
+        );
+
+        setRecipes({
+          all: allRecipes,
+          public: publicRecipes,
+          private: privateRecipes,
+        });
+      } catch (err) {
+        console.error(err);
+        setRecipes({ all: [], public: [], private: [] });
+      } finally {
+        setLoadingRecipes(false);
+      }
+    };
+
+    fetchUserRecipes();
+  }, [userId, status]);
+
+  const latestRecipes = recipes.all.slice(0, 4);
+
+  const RecipeSection = ({
+    title,
+    description,
+    recipeList,
+  }: {
+    title: string;
+    description: string;
+    recipeList: Recipe[];
+  }) => (
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {recipeList.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {recipeList.map((recipe) => (
+              <RecipeCardCompact key={recipe.id} recipe={recipe} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-center text-muted-foreground py-6">
+            Aucune recette n&apos;a été trouvée dans cette catégorie.
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-xl text-muted-foreground">Chargement de la session...</p>
+      </div>
+    );
+  }
+
+  if (status === 'unauthenticated') {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <h1 className="text-3xl font-bold mb-4">Accès Refusé</h1>
+        <p className="text-xl text-muted-foreground mb-6">
+          Vous devez être connecté pour accéder à cette page de compte.
+        </p>
+        <Button asChild>
+          <Link href="/api/auth/signin">Se connecter</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  if (loadingRecipes) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <main className="container mx-auto px-4 py-8">
+          <div className="max-w-6xl mx-auto space-y-8">
+            <Skeleton className="h-10 w-64" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Skeleton className="h-28 w-full" />
+              <Skeleton className="h-28 w-full" />
+              <Skeleton className="h-28 w-full" />
+            </div>
+            <Skeleton className="h-96 w-full" />
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -16,11 +154,12 @@ export default function AccountPage() {
 
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto space-y-8">
-          {/* Header */}
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-4xl font-bold tracking-tight">Mon compte</h1>
-              <p className="text-muted-foreground mt-2">Gérez vos recettes et vos favoris</p>
+              <p className="text-muted-foreground mt-2">
+                Bonjour {session?.user?.name}, gérez vos recettes et vos favoris.
+              </p>
             </div>
             <Button size="lg" asChild>
               <Link href="/recipes/new">
@@ -30,7 +169,6 @@ export default function AccountPage() {
             </Button>
           </div>
 
-          {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -38,8 +176,8 @@ export default function AccountPage() {
                 <BookOpen className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">12</div>
-                <p className="text-xs text-muted-foreground">+2 ce mois-ci</p>
+                <div className="text-2xl font-bold">{recipeCount}</div>
+                <p className="text-xs text-muted-foreground">Recettes totales</p>
               </CardContent>
             </Card>
 
@@ -49,7 +187,7 @@ export default function AccountPage() {
                 <Heart className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">48</div>
+                <div className="text-2xl font-bold">{favoriteCount}</div>
                 <p className="text-xs text-muted-foreground">Recettes sauvegardées</p>
               </CardContent>
             </Card>
@@ -60,26 +198,29 @@ export default function AccountPage() {
                 <Settings className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">234</div>
-                <p className="text-xs text-muted-foreground">+12 cette semaine</p>
+                <div className="text-2xl font-bold">{followersCount}</div>
+                <p className="text-xs text-muted-foreground">Utilisateurs qui vous suivent</p>
               </CardContent>
             </Card>
           </div>
 
-          {/* User Recipes */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Mes dernières recettes</CardTitle>
-              <CardDescription>Les recettes que vous avez créées récemment</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {userRecipes.map((recipe) => (
-                  <RecipeCardCompact key={recipe.id} recipe={recipe} />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <section className="space-y-6">
+            <RecipeSection
+              title="Mes dernières recettes"
+              description="Les 4 recettes que vous avez créées le plus récemment."
+              recipeList={latestRecipes}
+            />
+            <RecipeSection
+              title="Mes recettes publiques"
+              description="Ces recettes sont visibles par tous les utilisateurs."
+              recipeList={recipes.public}
+            />
+            <RecipeSection
+              title="Mes recettes privées"
+              description="Seul vous pouvez voir et modifier ces recettes."
+              recipeList={recipes.private}
+            />
+          </section>
         </div>
       </main>
     </div>
