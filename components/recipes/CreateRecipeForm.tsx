@@ -6,7 +6,7 @@ import { useForm, useFieldArray, Controller, FieldError } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod';
 import toast from 'react-hot-toast';
 
-import { recipeSchema, type RecipeInput } from '@/lib/validations/recipe';
+import { recipeFormSchema, type RecipeInput } from '@/lib/validations/recipe';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Plus, X } from 'lucide-react';
+import { ImageDropzone } from '@/components/common/ImageDropzone';
 
 type MetaItem = { id: string; name: string };
 export type Meta = {
@@ -46,7 +47,7 @@ export function CreateRecipeForm({ meta }: CreateRecipeFormProps) {
     watch,
     formState: { errors, isValid },
   } = useForm<RecipeInput>({
-    resolver: zodResolver(recipeSchema),
+    resolver: zodResolver(recipeFormSchema),
     defaultValues: {
       title: '',
       description: '',
@@ -55,8 +56,8 @@ export function CreateRecipeForm({ meta }: CreateRecipeFormProps) {
       ingredients: [{ name: '', quantity: '' }],
       steps: [{ content: '', order: 1 }],
       tags: [],
-      images: [],
-      isPublic: true,
+      images: [{ file: null }],
+      isPublic: false,
     },
     mode: 'onChange',
   });
@@ -80,9 +81,32 @@ export function CreateRecipeForm({ meta }: CreateRecipeFormProps) {
     toast.loading('Publication en cours...');
 
     try {
+      const { images, ...recipeData } = values;
+      const imageFile = images?.[0]?.file;
+      let imageUrl = '';
+
+      if (imageFile) {
+        const formData = new FormData();
+        formData.append('file', imageFile);
+
+        const uploadRes = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!uploadRes.ok) {
+          const json = await uploadRes.json();
+          throw new Error(json.error || 'Échec de l’upload de l’image.');
+        }
+
+        const uploadData = await uploadRes.json();
+        imageUrl = uploadData.filename;
+      }
+
       const payload = {
-        ...values,
-        steps: values.steps.map((s, idx) => ({ ...s, order: idx + 1 })),
+        ...recipeData,
+        steps: recipeData.steps.map((s, idx) => ({ ...s, order: idx + 1 })),
+        images: imageUrl ? [imageUrl] : [],
       };
 
       const res = await fetch('/api/recipes', {
@@ -153,13 +177,14 @@ export function CreateRecipeForm({ meta }: CreateRecipeFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="image">Photo de la recette (URL)</Label>
-              <div className="flex items-center gap-4">
-                <Input id="image" placeholder="https://..." {...register('images.0.url')} />
-              </div>
-              {errors.images?.[0]?.url && (
-                <p className="text-sm text-red-500">{getErrorMessage(errors.images?.[0]?.url)}</p>
-              )}
+              <Label htmlFor="image-dropzone">Photo de la recette</Label>
+              <Controller
+                control={control}
+                name="images.0.file"
+                render={({ field, fieldState: { error } }) => (
+                  <ImageDropzone onChange={field.onChange} error={getErrorMessage(error)} />
+                )}
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
