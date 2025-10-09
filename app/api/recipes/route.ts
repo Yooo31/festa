@@ -1,7 +1,7 @@
 import { formatResponse } from '@/lib/adapters';
 import { recipeToListItem } from '@/lib/adapters/recipeAdapter';
 import { prisma } from '@/lib/prisma';
-import { recipeSchema } from '@/lib/validations/recipe';
+import { recipeAPISchema } from '@/lib/validations/recipe';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]/route';
 
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const parsed = recipeSchema.safeParse(body);
+    const parsed = recipeAPISchema.safeParse(body);
 
     if (!parsed.success) {
       return formatResponse({ error: parsed.error.format() }, 400);
@@ -105,7 +105,7 @@ export async function POST(req: Request) {
           : undefined,
         images: images
           ? {
-              create: images.map((img) => ({ url: img.url })),
+              create: images.map((url) => ({ url: url })),
             }
           : undefined,
       },

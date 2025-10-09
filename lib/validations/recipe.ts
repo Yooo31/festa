@@ -1,6 +1,11 @@
 import { z } from 'zod';
 
-export const recipeSchema = z.object({
+const fileSchema = z
+  .instanceof(File, { message: 'Veuillez sélectionner un fichier image.' })
+  .refine((file) => file.size < 5000000, `La taille maximale est de 5MB.`)
+  .refine((file) => file.type.startsWith('image/'), 'Le fichier doit être une image.');
+
+export const recipeFormSchema = z.object({
   title: z.string().min(2, 'Le titre doit contenir au moins 2 caractères.'),
   description: z.string().min(10, 'La description doit contenir au moins 10 caractères.'),
   difficultyId: z.string().min(1, 'La difficulté est obligatoire.'),
@@ -22,20 +27,19 @@ export const recipeSchema = z.object({
     )
     .nonempty('Ajoutez au moins une étape.'),
   tags: z.array(z.string()).optional(),
-  images: z.array(z.object({ url: z.string().url('URL invalide') })).optional(),
-  isPublic: z.boolean().optional().default(false),
+  images: z
+    .array(
+      z.object({
+        file: fileSchema.optional().nullable(),
+      }),
+    )
+    .max(1, 'Seulement une image est autorisée.'),
+  isPublic: z.boolean(),
 });
 
-export type RecipeOutput = z.infer<typeof recipeSchema>;
+export const recipeAPISchema = recipeFormSchema.omit({ images: true }).extend({
+  images: z.array(z.string()).max(1, 'Seulement une image est autorisée.').optional(),
+});
 
-export type RecipeInput = {
-  title: string;
-  description: string;
-  difficultyId: string;
-  durationId: string;
-  ingredients: { name: string; quantity?: string }[];
-  steps: { order: number; content: string }[];
-  tags?: string[];
-  images?: { url: string }[];
-  isPublic?: boolean;
-};
+export type RecipeInput = z.infer<typeof recipeFormSchema>;
+export type RecipeAPIPayload = z.infer<typeof recipeAPISchema>;
