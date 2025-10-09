@@ -22,8 +22,20 @@ export const recipeSchema = z.object({
     )
     .nonempty('Ajoutez au moins une étape.'),
   tags: z.array(z.string()).optional(),
-  images: z.array(z.string().url()).optional(),
+  images: z.array(z.object({ url: z.string().url('URL invalide') })).optional(),
   isPublic: z.boolean().optional().default(false),
 });
 
-export type RecipeInput = z.infer<typeof recipeSchema>;
+export type RecipeOutput = z.infer<typeof recipeSchema>;
+
+export type RecipeInput = {
+  title: string;
+  description: string;
+  difficultyId: string;
+  durationId: string;
+  ingredients: { name: string; quantity?: string }[];
+  steps: { order: number; content: string }[];
+  tags?: string[];
+  images?: { url: string }[];
+  isPublic?: boolean;
+};
