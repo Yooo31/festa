@@ -56,7 +56,6 @@ export default async function AccountLayout({ children }: { children: React.Reac
                   asChild
                 >
                   <Link href="/logout">
-                    {' '}
                     <LogOut className="h-4 w-4 mr-3" />
                     Déconnexion
                   </Link>

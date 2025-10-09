@@ -77,15 +77,17 @@ export default function AccountPage() {
   const latestRecipes = recipes.all.slice(0, 4);
 
   const RecipeSection = ({
+    id,
     title,
     description,
     recipeList,
   }: {
+    id: string;
     title: string;
     description: string;
     recipeList: Recipe[];
   }) => (
-    <Card>
+    <Card id={id} className="shadow-lg">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
@@ -131,94 +133,93 @@ export default function AccountPage() {
   if (loadingRecipes) {
     return (
       <div className="min-h-screen bg-background">
-        <section className="container mx-auto px-4 py-8">
-          <div className="max-w-6xl mx-auto space-y-8">
-            <Skeleton className="h-10 w-64" />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Skeleton className="h-28 w-full" />
-              <Skeleton className="h-28 w-full" />
-              <Skeleton className="h-28 w-full" />
-            </div>
-            <Skeleton className="h-96 w-full" />
+        <div className="max-w-6xl mx-auto space-y-8">
+          <Skeleton className="h-10 w-64" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Skeleton className="h-28 w-full" />
+            <Skeleton className="h-28 w-full" />
+            <Skeleton className="h-28 w-full" />
           </div>
-        </section>
+          <Skeleton className="h-96 w-full" />
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <section className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto space-y-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold tracking-tight">Mon compte</h1>
-              <p className="text-muted-foreground mt-2">
-                Bonjour {session?.user?.name}, gérez vos recettes et vos favoris.
-              </p>
-            </div>
-            <Button size="lg" asChild>
-              <Link href="/recipes/new">
-                <Plus className="h-5 w-5 mr-2" />
-                Créer une recette
-              </Link>
-            </Button>
+      <div className="max-w-6xl mx-auto space-y-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight">Mon compte</h1>
+            <p className="text-muted-foreground mt-2">
+              Bonjour {session?.user?.name}, gérez vos recettes et vos favoris.
+            </p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Mes recettes</CardTitle>
-                <BookOpen className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{recipeCount}</div>
-                <p className="text-xs text-muted-foreground">Recettes totales</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Favoris</CardTitle>
-                <Heart className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{favoriteCount}</div>
-                <p className="text-xs text-muted-foreground">Recettes sauvegardées</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Abonnés</CardTitle>
-                <Settings className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{followersCount}</div>
-                <p className="text-xs text-muted-foreground">Utilisateurs qui vous suivent</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          <section className="space-y-6">
-            <RecipeSection
-              title="Mes dernières recettes"
-              description="Les 4 recettes que vous avez créées le plus récemment."
-              recipeList={latestRecipes}
-            />
-            <RecipeSection
-              title="Mes recettes publiques"
-              description="Ces recettes sont visibles par tous les utilisateurs."
-              recipeList={recipes.public}
-            />
-            <RecipeSection
-              title="Mes recettes privées"
-              description="Seul vous pouvez voir et modifier ces recettes."
-              recipeList={recipes.private}
-            />
-          </section>
+          <Button size="lg" asChild>
+            <Link href="/recipes/new">
+              <Plus className="h-5 w-5 mr-2" />
+              Créer une recette
+            </Link>
+          </Button>
         </div>
-      </section>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Mes recettes</CardTitle>
+              <BookOpen className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{recipeCount}</div>
+              <p className="text-xs text-muted-foreground">Recettes totales</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Favoris</CardTitle>
+              <Heart className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{favoriteCount}</div>
+              <p className="text-xs text-muted-foreground">Recettes sauvegardées</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Abonnés</CardTitle>
+              <Settings className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{followersCount}</div>
+              <p className="text-xs text-muted-foreground">Utilisateurs qui vous suivent</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <section className="space-y-6">
+          <RecipeSection
+            id="latest"
+            title="Mes dernières recettes"
+            description="Les 4 recettes que vous avez créées le plus récemment."
+            recipeList={latestRecipes}
+          />
+          <RecipeSection
+            id="public"
+            title="Mes recettes publiques"
+            description="Ces recettes sont visibles par tous les utilisateurs."
+            recipeList={recipes.public}
+          />
+          <RecipeSection
+            id="private"
+            title="Mes recettes privées"
+            description="Seul vous pouvez voir et modifier ces recettes."
+            recipeList={recipes.private}
+          />
+        </section>
+      </div>
     </div>
   );
 }
