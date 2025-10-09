@@ -1,12 +1,16 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Clock, Star, Heart, ChefHat } from 'lucide-react';
+import { Clock, Star, ChefHat } from 'lucide-react';
 
 import type { Recipe, Step } from '@/lib/types/recipe';
 import { Metadata } from 'next';
+
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { FavoriteButton } from '@/components/recipes/FavoriteButton';
+import { prisma } from '@/lib/prisma';
 
 async function getRecipe(recipeId: string) {
   const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/recipes/${recipeId}`);
@@ -19,6 +23,15 @@ async function getRecipe(recipeId: string) {
   }
 
   return response.json();
+}
+
+async function checkIsFavorite(userId: string, recipeId: string): Promise<boolean> {
+  const favorite = await prisma.favorite.findUnique({
+    where: {
+      userId_recipeId: { userId, recipeId },
+    },
+  });
+  return !!favorite;
 }
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
@@ -50,6 +63,15 @@ export default async function RecipePage({ params }: { params: { id: string } })
     notFound();
   }
 
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  const isAuthenticated = !!userId;
+
+  let initialIsFavorite = false;
+  if (isAuthenticated) {
+    initialIsFavorite = await checkIsFavorite(userId!, recipeId);
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <section className="container mx-auto px-4 py-8">
@@ -60,16 +82,19 @@ export default async function RecipePage({ params }: { params: { id: string } })
                 <h1 className="text-4xl font-bold tracking-tight text-balance">{recipe.title}</h1>
                 <p className="text-lg text-muted-foreground text-pretty">{recipe.description}</p>
               </div>
-              <Button size="lg" className="shrink-0">
-                <Heart className="h-5 w-5 mr-2" />
-                Favoris
-              </Button>
+
+              <FavoriteButton
+                recipeId={recipeId}
+                initialIsFavorite={initialIsFavorite}
+                isAuthenticated={isAuthenticated}
+                variant="normal"
+              />
             </div>
 
             <div className="flex flex-wrap items-center gap-6">
               <div className="flex items-center gap-2">
                 <Star className="h-5 w-5 fill-accent text-accent" />
-                <span className="font-semibold text-lg">{recipe.rating}</span>
+                {/* <span className="font-semibold text-lg">{recipe.rating}</span> */}
                 <span className="text-muted-foreground">/5</span>
               </div>
               <div className="flex items-center gap-2">

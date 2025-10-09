@@ -1,16 +1,19 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Clock, Star, Heart } from 'lucide-react';
+import { Clock, Star } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import type { Recipe } from '@/lib/types/recipe';
+import type { RecipeWithStatus } from '@/lib/types/recipe';
+import { FavoriteButton } from '@/components/recipes/FavoriteButton';
 
 interface RecipeCardDetailedProps {
-  recipe: Recipe;
+  recipe: RecipeWithStatus;
 }
 
 export function RecipeCardDetailed({ recipe }: RecipeCardDetailedProps) {
+  const isAuthenticated = recipe.isAuthenticated;
+  const initialIsFavorite = recipe.initialIsFavorite;
+
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       <div className="grid md:grid-cols-[300px_1fr] gap-6">
@@ -36,16 +39,18 @@ export function RecipeCardDetailed({ recipe }: RecipeCardDetailedProps) {
               <p className="text-muted-foreground text-pretty">{recipe.description}</p>
             </div>
 
-            <Button size="icon" variant="ghost" className="shrink-0">
-              <Heart className="h-5 w-5" />
-              <span className="sr-only">Ajouter aux favoris</span>
-            </Button>
+            <FavoriteButton
+              recipeId={recipe.id}
+              initialIsFavorite={initialIsFavorite}
+              isAuthenticated={isAuthenticated}
+              variant="small"
+            />
           </div>
 
           <div className="flex items-center gap-6 text-sm">
             <div className="flex items-center gap-1">
               <Star className="h-4 w-4 fill-accent text-accent" />
-              <span className="font-medium">{recipe.rating}</span>
+              {/* <span className="font-medium">{recipe.rating}</span> */}
             </div>
             <div className="flex items-center gap-1">
               <Clock className="h-4 w-4" />

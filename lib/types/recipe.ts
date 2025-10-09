@@ -3,7 +3,7 @@ export interface Recipe {
   title: string;
   description: string;
   images: string[];
-  rating: number;
+  // rating: number;
   duration: string;
   difficulty: 'Facile' | 'Moyen' | 'Difficile';
   tags: string[];
@@ -34,4 +34,9 @@ export interface RecipeListItem {
   tags: string[];
   images: string[];
   author: string;
+}
+
+export interface RecipeWithStatus extends Recipe {
+  isAuthenticated: boolean;
+  initialIsFavorite: boolean;
 }

@@ -1,5 +1,8 @@
 import { RecipeListContainer } from '@/components/recipes/RecipeListContainer';
-import type { Recipe } from '@/lib/types/recipe';
+import type { Recipe, RecipeWithStatus } from '@/lib/types/recipe';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { checkIsFavorite } from '@/lib/actions/favoriteActions';
 
 type MetaItem = { id: string; name: string };
 type Meta = {
@@ -31,6 +34,28 @@ const fetchRecipesAndMeta = async (): Promise<{ recipes: Recipe[]; meta: Meta }>
 export default async function Home() {
   const { recipes, meta } = await fetchRecipesAndMeta();
 
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+  const isAuthenticated = !!userId;
+
+  let recipesWithStatus: RecipeWithStatus[];
+
+  if (isAuthenticated) {
+    recipesWithStatus = await Promise.all(
+      recipes.map(async (recipe) => ({
+        ...recipe,
+        isAuthenticated: true,
+        initialIsFavorite: await checkIsFavorite(userId!, recipe.id),
+      })),
+    );
+  } else {
+    recipesWithStatus = recipes.map((recipe) => ({
+      ...recipe,
+      isAuthenticated: false,
+      initialIsFavorite: false,
+    }));
+  }
+
   if (recipes.length === 0 && meta.difficulties.length === 0) {
     return (
       <div className="min-h-screen bg-background">
@@ -50,7 +75,7 @@ export default async function Home() {
           <h1 className="text-4xl font-bold tracking-tight">Découvrez nos recettes</h1>
         </div>
 
-        <RecipeListContainer initialRecipes={recipes} meta={meta} />
+        <RecipeListContainer initialRecipes={recipesWithStatus} meta={meta} />
       </section>
     </div>
   );

@@ -5,7 +5,7 @@ import { RecipeFilters, type FilterState } from './RecipeFilter';
 import { ViewToggle } from './ViewToggle';
 import { RecipeCardCompact } from './RecipeCardCompact';
 import { RecipeCardDetailed } from './RecipeCardDetailled';
-import type { Recipe } from '@/lib/types/recipe';
+import type { RecipeWithStatus } from '@/lib/types/recipe';
 
 type MetaItem = { id: string; name: string };
 type Meta = {
@@ -15,7 +15,7 @@ type Meta = {
 };
 
 interface RecipeListContainerProps {
-  initialRecipes: Recipe[];
+  initialRecipes: RecipeWithStatus[];
   meta: Meta;
 }
 
@@ -27,9 +27,7 @@ export function RecipeListContainer({ initialRecipes, meta }: RecipeListContaine
     tags: [],
   });
 
-  // La logique de filtrage se fait maintenant côté client
   const filteredRecipes = initialRecipes.filter((recipe) => {
-    // NOTE: Il serait plus performant d'inclure les filtres dans la requête fetch Server-side
     if (filters.difficulty !== 'all' && recipe.difficulty.toLowerCase() !== filters.difficulty) {
       return false;
     }
