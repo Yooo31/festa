@@ -41,7 +41,7 @@ export default function RecipePage({ params }: { params: { id: string } }) {
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="h-5 w-5" />
-                <span>{recipe.time}</span>
+                <span>{recipe.duration}</span>
               </div>
               <Badge variant="secondary" className="text-sm px-3 py-1">
                 <ChefHat className="h-4 w-4 mr-1" />
@@ -65,7 +65,7 @@ export default function RecipePage({ params }: { params: { id: string } }) {
           {/* Image */}
           <div className="relative aspect-[16/9] rounded-xl overflow-hidden">
             <Image
-              src={`/uploads/${recipe.image}` || '/placeholder.svg'}
+              src={`/uploads/${recipe.images[0]}` || '/placeholder.svg'}
               alt={recipe.title}
               fill
               unoptimized

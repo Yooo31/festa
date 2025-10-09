@@ -10,12 +10,13 @@ interface RecipeCardCompactProps {
 }
 
 export function RecipeCardCompact({ recipe }: RecipeCardCompactProps) {
+  console.log('Rendering RecipeCardCompact for recipe:', recipe.images[0]);
   return (
     <Link href={`/recipes/${recipe.id}`}>
       <Card className="overflow-hidden hover:shadow-lg transition-shadow">
         <div className="aspect-[4/3] relative overflow-hidden">
           <Image
-            src={`/uploads/${recipe.image}` || '/placeholder.svg'}
+            src={`/uploads/${recipe.images[0]}` || '/placeholder.svg'}
             alt={recipe.title}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -33,7 +34,7 @@ export function RecipeCardCompact({ recipe }: RecipeCardCompactProps) {
             </div>
             <div className="flex items-center gap-1">
               <Clock className="h-4 w-4" />
-              <span>{recipe.time}</span>
+              <span>{recipe.duration}</span>
             </div>
           </div>
 
