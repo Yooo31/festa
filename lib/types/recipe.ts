@@ -2,9 +2,9 @@ export interface Recipe {
   id: string;
   title: string;
   description: string;
-  image: string;
+  images: string[];
   rating: number;
-  time: string;
+  duration: string;
   difficulty: 'Facile' | 'Moyen' | 'Difficile';
   tags: string[];
   author: string;

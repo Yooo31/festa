@@ -12,30 +12,29 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
 
+type MetaItem = { id: string; name: string };
+
 interface RecipeFiltersProps {
   onFilterChange: (filters: FilterState) => void;
+  difficulties: MetaItem[];
+  durations: MetaItem[];
+  tags: MetaItem[];
 }
 
 export interface FilterState {
-  time: string;
+  duration: string;
   difficulty: string;
   tags: string[];
 }
 
-const availableTags = [
-  'Végétarien',
-  'Vegan',
-  'Sans gluten',
-  'Dessert',
-  'Entrée',
-  'Plat principal',
-  'Rapide',
-  'Healthy',
-];
-
-export function RecipeFilters({ onFilterChange }: RecipeFiltersProps) {
+export function RecipeFilters({
+  onFilterChange,
+  difficulties,
+  durations,
+  tags,
+}: RecipeFiltersProps) {
   const [filters, setFilters] = useState<FilterState>({
-    time: 'all',
+    duration: 'all',
     difficulty: 'all',
     tags: [],
   });
@@ -62,20 +61,23 @@ export function RecipeFilters({ onFilterChange }: RecipeFiltersProps) {
   return (
     <div className="bg-card border border-border rounded-lg p-6 space-y-4">
       <h2 className="text-lg font-semibold">Filtres</h2>
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="time">Temps de préparation</Label>
-          <Select value={filters.time} onValueChange={(value) => updateFilters('time', value)}>
-            <SelectTrigger id="time">
+          <Label htmlFor="duration">Temps de préparation</Label>
+          <Select
+            value={filters.duration}
+            onValueChange={(value) => updateFilters('duration', value)}
+          >
+            <SelectTrigger id="duration">
               <SelectValue placeholder="Tous" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tous</SelectItem>
-              <SelectItem value="15">Moins de 15 min</SelectItem>
-              <SelectItem value="30">Moins de 30 min</SelectItem>
-              <SelectItem value="60">Moins de 1h</SelectItem>
-              <SelectItem value="60+">Plus de 1h</SelectItem>
+              {durations.map((d) => (
+                <SelectItem key={d.id} value={d.name}>
+                  {d.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -91,9 +93,11 @@ export function RecipeFilters({ onFilterChange }: RecipeFiltersProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Toutes</SelectItem>
-              <SelectItem value="facile">Facile</SelectItem>
-              <SelectItem value="moyen">Moyen</SelectItem>
-              <SelectItem value="difficile">Difficile</SelectItem>
+              {difficulties.map((d) => (
+                <SelectItem key={d.id} value={d.name.toLowerCase()}>
+                  {d.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -105,9 +109,9 @@ export function RecipeFilters({ onFilterChange }: RecipeFiltersProps) {
               <SelectValue placeholder="Ajouter un tag" />
             </SelectTrigger>
             <SelectContent>
-              {availableTags.map((tag) => (
-                <SelectItem key={tag} value={tag}>
-                  {tag}
+              {tags.map((tag) => (
+                <SelectItem key={tag.id} value={tag.name}>
+                  {tag.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -116,7 +120,7 @@ export function RecipeFilters({ onFilterChange }: RecipeFiltersProps) {
       </div>
 
       {filters.tags.length > 0 && (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 pt-2">
           {filters.tags.map((tag) => (
             <Badge key={tag} variant="secondary" className="gap-1">
               {tag}
