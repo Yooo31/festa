@@ -65,7 +65,7 @@ export default function RecipePage({ params }: { params: { id: string } }) {
           {/* Image */}
           <div className="relative aspect-[16/9] rounded-xl overflow-hidden">
             <Image
-              src={recipe.image || '/placeholder.svg'}
+              src={`/uploads/${recipe.image}` || '/placeholder.svg'}
               alt={recipe.title}
               fill
               unoptimized

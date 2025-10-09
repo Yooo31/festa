@@ -10,13 +10,12 @@ interface RecipeCardCompactProps {
 }
 
 export function RecipeCardCompact({ recipe }: RecipeCardCompactProps) {
-  console.log(recipe.image);
   return (
     <Link href={`/recipes/${recipe.id}`}>
       <Card className="overflow-hidden hover:shadow-lg transition-shadow">
         <div className="aspect-[4/3] relative overflow-hidden">
           <Image
-            src={recipe.image || '/placeholder.svg'}
+            src={`/uploads/${recipe.image}` || '/placeholder.svg'}
             alt={recipe.title}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

@@ -16,7 +16,7 @@ export function RecipeCardDetailed({ recipe }: RecipeCardDetailedProps) {
       <div className="grid md:grid-cols-[300px_1fr] gap-6">
         <Link href={`/recipes/${recipe.id}`} className="relative aspect-[4/3] md:aspect-auto">
           <Image
-            src={recipe.image || '/placeholder.svg'}
+            src={`/uploads/${recipe.image}` || '/placeholder.svg'}
             alt={recipe.title}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
