@@ -259,7 +259,7 @@ export default function CreateRecipePage() {
                       <p className="text-sm text-muted-foreground">Chargement...</p>
                     ) : (
                       meta.tags.map((tag) => {
-                        const isSelected = selectedTags.includes(tag.id);
+                        const isSelected = (selectedTags ?? []).includes(tag.id);
                         return (
                           <button
                             type="button"
