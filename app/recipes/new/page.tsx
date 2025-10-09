@@ -1,4 +1,3 @@
-import { Navigation } from '@/components/common/navigation';
 import { CreateRecipeForm } from '@/components/recipes/CreateRecipeForm';
 
 async function getMetaData() {
@@ -12,10 +11,9 @@ export default async function CreateRecipePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
-      <main className="container mx-auto px-4 py-8">
+      <section className="container mx-auto px-4 py-8">
         <CreateRecipeForm meta={meta} />
-      </main>
+      </section>
     </div>
   );
 }

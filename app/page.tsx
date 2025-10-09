@@ -1,4 +1,3 @@
-import { Navigation } from '@/components/common/navigation';
 import { RecipeListContainer } from '@/components/recipes/RecipeListContainer';
 import type { Recipe } from '@/lib/types/recipe';
 
@@ -35,26 +34,24 @@ export default async function Home() {
   if (recipes.length === 0 && meta.difficulties.length === 0) {
     return (
       <div className="min-h-screen bg-background">
-        <Navigation />
-        <main className="container mx-auto px-4 py-8 space-y-8">
+        <section className="container mx-auto px-4 py-8 space-y-8">
           <p className="text-center text-red-500">
             Impossible de charger les données de la page d&apos;accueil.
           </p>
-        </main>
+        </section>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
-      <main className="container mx-auto px-4 py-8 space-y-8">
+      <section className="container mx-auto px-4 py-8 space-y-8">
         <div className="space-y-4">
           <h1 className="text-4xl font-bold tracking-tight">Découvrez nos recettes</h1>
         </div>
 
         <RecipeListContainer initialRecipes={recipes} meta={meta} />
-      </main>
+      </section>
     </div>
   );
 }

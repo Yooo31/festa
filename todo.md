@@ -1,8 +1,8 @@
 - [ ] Faire un layout imbriqué
-- [ ] Ajouter une page 404
-- [ ] Ajouter une page 500
-- [ ] Ajouter un component de loading
-- [ ] Ajouter un component d'erreur
+- [x] Ajouter une page 404
+- [x] Ajouter une page 500
+- [x] Ajouter un component de loading
+- [x] Ajouter un component d'erreur
 - [ ] Optimisation des images
 - [ ] SEO Dynamique
 

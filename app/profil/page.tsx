@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 
-import { Navigation } from '@/components/common/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, BookOpen, Heart, Settings } from 'lucide-react';
@@ -132,8 +131,7 @@ export default function AccountPage() {
   if (loadingRecipes) {
     return (
       <div className="min-h-screen bg-background">
-        <Navigation />
-        <main className="container mx-auto px-4 py-8">
+        <section className="container mx-auto px-4 py-8">
           <div className="max-w-6xl mx-auto space-y-8">
             <Skeleton className="h-10 w-64" />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -143,16 +141,14 @@ export default function AccountPage() {
             </div>
             <Skeleton className="h-96 w-full" />
           </div>
-        </main>
+        </section>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
-
-      <main className="container mx-auto px-4 py-8">
+      <section className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto space-y-8">
           <div className="flex items-center justify-between">
             <div>
@@ -222,7 +218,7 @@ export default function AccountPage() {
             />
           </section>
         </div>
-      </main>
+      </section>
     </div>
   );
 }

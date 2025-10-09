@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
-import { Navigation } from '@/components/common/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,9 +25,7 @@ export default async function RecipePage({ params }: { params: { id: string } })
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
-
-      <main className="container mx-auto px-4 py-8">
+      <section className="container mx-auto px-4 py-8">
         <div className="max-w-5xl mx-auto space-y-8">
           <div className="space-y-4">
             <div className="flex items-start justify-between gap-4">
@@ -122,7 +119,7 @@ export default async function RecipePage({ params }: { params: { id: string } })
             </Card>
           </div>
         </div>
-      </main>
+      </section>
     </div>
   );
 }

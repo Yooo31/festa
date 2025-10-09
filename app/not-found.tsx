@@ -1,12 +1,9 @@
 import Link from 'next/link';
-import { Navigation } from '@/components/common/navigation';
 
 export default function NotFound() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Navigation />
-
-      <main className="flex flex-col items-center justify-center flex-grow p-4 text-center">
+      <section className="flex flex-col items-center justify-center flex-grow p-4 text-center">
         <h1 className="text-9xl font-extrabold text-primary mb-4">404</h1>
         <h2 className="text-3xl font-semibold tracking-tight mb-4">Page Introuvable</h2>
         <p className="text-lg text-muted-foreground mb-8 max-w-md">
@@ -17,7 +14,7 @@ export default function NotFound() {
             Retourner à l&apos;accueil
           </button>
         </Link>
-      </main>
+      </section>
     </div>
   );
 }
