@@ -77,15 +77,17 @@ export default function AccountPage() {
   const latestRecipes = recipes.all.slice(0, 4);
 
   const RecipeSection = ({
+    id,
     title,
     description,
     recipeList,
   }: {
+    id: string;
     title: string;
     description: string;
     recipeList: Recipe[];
   }) => (
-    <Card>
+    <Card id={id}>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
@@ -202,16 +204,19 @@ export default function AccountPage() {
 
           <section className="space-y-6">
             <RecipeSection
+              id="latest"
               title="Mes dernières recettes"
               description="Les 4 recettes que vous avez créées le plus récemment."
               recipeList={latestRecipes}
             />
             <RecipeSection
+              id="public"
               title="Mes recettes publiques"
               description="Ces recettes sont visibles par tous les utilisateurs."
               recipeList={recipes.public}
             />
             <RecipeSection
+              id="private"
               title="Mes recettes privées"
               description="Seul vous pouvez voir et modifier ces recettes."
               recipeList={recipes.private}

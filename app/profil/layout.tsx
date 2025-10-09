@@ -29,7 +29,7 @@ export default async function AccountLayout({ children }: { children: React.Reac
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="flex flex-col md:flex-row gap-8">
         <div className="md:w-64 shrink-0">
-          <Card className="shadow-lg">
+          <Card className="shadow-lg mt-8">
             <CardContent className="p-4 space-y-1">
               {navLinks.map((link) => {
                 const Icon = link.icon;
