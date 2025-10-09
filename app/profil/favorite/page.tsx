@@ -1,4 +1,3 @@
-import { Navigation } from '@/components/common/navigation';
 import { RecipeCardCompact } from '@/components/recipes/RecipeCardCompact';
 import { mockRecipes } from '@/lib/mock-data';
 
@@ -7,9 +6,7 @@ export default function FavoritesPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
-
-      <main className="container mx-auto px-4 py-8">
+      <section className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto space-y-8">
           <div>
             <h1 className="text-4xl font-bold tracking-tight">Mes favoris</h1>
@@ -25,7 +22,7 @@ export default function FavoritesPage() {
             ))}
           </div>
         </div>
-      </main>
+      </section>
     </div>
   );
 }
