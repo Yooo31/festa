@@ -6,6 +6,8 @@
 - [ ] Optimisation des images
 - [ ] SEO Dynamique
 
+---
+
 - [ ] Ajouter la possibilité de marquer une recette comme favorite
 - [ ] Upload des photos : glissé déposé ou box upload dans public/uploads -> enregistrer en db le nom
 - [ ] Ajouter le bouton Modifier quand c'est notre recette
