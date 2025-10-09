@@ -9,8 +9,15 @@ export interface Recipe {
   tags: string[];
   author: string;
   ingredients: Ingredient[];
-  steps: string[];
+  steps: Step[];
   isPublic: boolean;
+}
+
+export interface Step {
+  content: string;
+  id: string;
+  order: number;
+  recipeId: string;
 }
 
 export interface Ingredient {

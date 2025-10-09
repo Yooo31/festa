@@ -12,7 +12,7 @@ interface RecipeCardCompactProps {
 export function RecipeCardCompact({ recipe }: RecipeCardCompactProps) {
   return (
     <Link href={`/recipes/${recipe.id}`}>
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+      <Card className="overflow-hidden p-0 hover:shadow-lg transition-shadow">
         <div className="aspect-[4/3] relative overflow-hidden">
           <Image
             src={`/uploads/${recipe.images[0]}` || '/placeholder.svg'}
