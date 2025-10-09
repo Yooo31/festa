@@ -7,11 +7,12 @@ import { authOptions } from '../../auth/[...nextauth]/route';
 
 export async function GET(_: Request, { params }: { params: { id: string } }) {
   try {
+    const recipeId = params.id;
     const session = await getServerSession(authOptions);
     const currentUserId = session?.user?.id;
 
     const recipe = await prisma.recipe.findUnique({
-      where: { id: params.id },
+      where: { id: recipeId },
       include: {
         author: { select: { username: true, firstName: true, lastName: true } },
         difficulty: true,

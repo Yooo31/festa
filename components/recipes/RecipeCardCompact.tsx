@@ -29,7 +29,7 @@ export function RecipeCardCompact({ recipe }: RecipeCardCompactProps) {
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <Star className="h-4 w-4 fill-accent text-accent" />
-              <span>{recipe.rating}</span>
+              {/* <span>{recipe.rating}</span> */}
             </div>
             <div className="flex items-center gap-1">
               <Clock className="h-4 w-4" />
