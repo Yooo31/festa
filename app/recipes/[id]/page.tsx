@@ -6,22 +6,49 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Clock, Star, Heart, ChefHat } from 'lucide-react';
 
 import type { Recipe, Step } from '@/lib/types/recipe';
+import { Metadata } from 'next';
 
-export default async function RecipePage({ params }: { params: { id: string } }) {
-  const recipeId = params.id;
-
+async function getRecipe(recipeId: string) {
   const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/recipes/${recipeId}`);
 
   if (!response.ok) {
     if (response.status === 404 || response.status === 403) {
-      notFound();
+      return null;
     }
-
     throw new Error(`Erreur lors de la récupération de la recette: ${response.statusText}`);
   }
 
-  const recipe: Recipe & { steps: Step[] } = await response.json();
-  console.log(recipe.images);
+  return response.json();
+}
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const recipe = await getRecipe(params.id);
+
+  if (!recipe) {
+    return {
+      title: 'Recette Introuvable',
+      description: "Désolé, la recette que vous recherchez n'a pas été trouvée.",
+    };
+  }
+
+  return {
+    title: recipe.title,
+    description:
+      recipe.description || `Découvrez la délicieuse recette de ${recipe.title} sur FESTA.`,
+    openGraph: {
+      images: recipe.images?.length > 0 ? [`/uploads/${recipe.images[0]}`] : undefined,
+    },
+  };
+}
+
+export default async function RecipePage({ params }: { params: { id: string } }) {
+  const recipeId = params.id;
+
+  const recipe: Recipe & { steps: Step[] } = await getRecipe(recipeId);
+
+  if (!recipe) {
+    notFound();
+  }
 
   return (
     <div className="min-h-screen bg-background">

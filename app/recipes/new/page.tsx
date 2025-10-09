@@ -1,4 +1,10 @@
 import { CreateRecipeForm } from '@/components/recipes/CreateRecipeForm';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Créer une nouvelle recette',
+  description: 'Partagez votre propre recette de cuisine avec la communauté FESTA.',
+};
 
 async function getMetaData() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/meta`);

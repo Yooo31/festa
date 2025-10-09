@@ -1,5 +1,11 @@
 import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Chargement...',
+  description: 'Partagez votre propre recette de cuisine avec la communauté FESTA.',
+};
 
 export default function GlobalLoading() {
   return (

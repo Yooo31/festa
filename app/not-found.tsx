@@ -1,4 +1,10 @@
 import Link from 'next/link';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Page non trouvée',
+  description: 'Partagez votre propre recette de cuisine avec la communauté FESTA.',
+};
 
 export default function NotFound() {
   return (

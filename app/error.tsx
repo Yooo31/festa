@@ -3,6 +3,12 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Une erreur est survenue',
+  description: 'Une erreur inattendue est survenue côté serveur ou lors du rendu.',
+};
 
 export default function GlobalError({
   error,

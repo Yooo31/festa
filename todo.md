@@ -4,7 +4,7 @@
 - [x] Ajouter un component de loading
 - [x] Ajouter un component d'erreur
 - [ ] Optimisation des images
-- [ ] SEO Dynamique
+- [x] SEO Dynamique
 
 ---
 
