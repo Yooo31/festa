@@ -105,7 +105,7 @@ export async function POST(req: Request) {
           : undefined,
         images: images
           ? {
-              create: images.map((url) => ({ url })),
+              create: images.map((img) => ({ url: img.url })),
             }
           : undefined,
       },
