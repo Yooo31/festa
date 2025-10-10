@@ -141,7 +141,17 @@ export async function updateRecipe(
     if (!existingRecipe) return { error: 'Recette introuvable' };
     if (existingRecipe.authorId !== userId) return { error: 'Non autorisé' };
 
-    const { title, ingredients, steps, tags, images } = data;
+    const {
+      title,
+      description,
+      isPublic,
+      difficultyId,
+      durationId,
+      ingredients,
+      steps,
+      tags,
+      images,
+    } = data;
 
     const updateData: {
       title?: string;
@@ -168,6 +178,10 @@ export async function updateRecipe(
     } = {};
 
     if (title !== undefined) updateData.title = title;
+    if (description !== undefined) updateData.description = description;
+    if (isPublic !== undefined) updateData.isPublic = isPublic;
+    if (difficultyId !== undefined) updateData.difficultyId = difficultyId;
+    if (durationId !== undefined) updateData.durationId = durationId;
 
     if (ingredients) {
       updateData.ingredients = {
