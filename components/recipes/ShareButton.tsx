@@ -12,14 +12,13 @@ import { toast } from 'react-hot-toast';
 
 interface ShareButtonProps {
   recipeTitle: string;
-  recipeUrl: string; // L'URL complète de la recette
+  recipeUrl: string;
 }
 
 export function ShareButton({ recipeTitle, recipeUrl }: ShareButtonProps) {
   const encodedUrl = encodeURIComponent(recipeUrl);
   const encodedTitle = encodeURIComponent(`Découvrez la recette : ${recipeTitle}`);
 
-  // Ouvre une fenêtre de partage pour un réseau social
   const openShareWindow = (url: string) => {
     window.open(url, '_blank', 'width=600,height=400,resizable=yes,scrollbars=yes');
   };

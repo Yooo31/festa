@@ -14,7 +14,7 @@
 - [x] Ajouter le bouton Modifier quand c'est notre recette
 - [x] Ajouter le bouton Supprimer quand c'est notre recette
 - [ ] Ajouter la pagination sur la liste des recettes
-- [ ] Ajouter une fonctionnalité de partage sur les réseaux sociaux
+- [x] Ajouter une fonctionnalité de partage sur les réseaux sociaux
 - [ ] Ajouter un système de notation ou de commentaires pour les recettes
 - [ ] Ajouter un profil utilisateur avec une liste de ses recettes
 - [ ] Pouvoir s'abonner à d'autres utilisateurs pour suivre leurs recettes
