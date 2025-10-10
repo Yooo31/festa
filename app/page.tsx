@@ -1,38 +1,33 @@
 import { RecipeListContainer } from '@/components/recipes/RecipeListContainer';
-import type { Recipe, RecipeWithStatus } from '@/lib/types/recipe';
+import type { Meta, Recipe, RecipeWithStatus } from '@/lib/types/recipe';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { checkIsFavorite } from '@/lib/actions/favoriteActions';
-
-type MetaItem = { id: string; name: string };
-type Meta = {
-  difficulties: MetaItem[];
-  durations: MetaItem[];
-  tags: MetaItem[];
-};
-
-const fetchRecipesAndMeta = async (): Promise<{ recipes: Recipe[]; meta: Meta }> => {
-  try {
-    const [recipesRes, metaRes] = await Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/recipes`),
-      fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/meta`),
-    ]);
-
-    if (!recipesRes.ok || !metaRes.ok) {
-      throw new Error('Failed to fetch initial data');
-    }
-
-    const recipes: Recipe[] = await recipesRes.json();
-    const meta: Meta = await metaRes.json();
-    return { recipes, meta };
-  } catch (err) {
-    console.error(err);
-    return { recipes: [], meta: { difficulties: [], durations: [], tags: [] } };
-  }
-};
+import { getAllPublicRecipes } from '@/lib/actions/getRecipes';
+import { getMetaData } from '@/lib/actions/meta';
 
 export default async function Home() {
-  const { recipes, meta } = await fetchRecipesAndMeta();
+  const [recipesResult, metaResult] = await Promise.all([getAllPublicRecipes(), getMetaData()]);
+
+  if ('error' in recipesResult || 'error' in metaResult) {
+    const recipeError = 'error' in recipesResult ? recipesResult.error : null;
+    const metaError = 'error' in metaResult ? metaResult.error : null;
+    const errorMessage = recipeError || metaError;
+    console.error('Erreur de chargement des données:', errorMessage);
+
+    return (
+      <div className="min-h-screen bg-background">
+        <section className="container mx-auto px-4 py-8 space-y-8">
+          <p className="text-center text-red-500">
+            Impossible de charger les données de la page d&apos;accueil : {errorMessage}
+          </p>
+        </section>
+      </div>
+    );
+  }
+
+  const recipes: Recipe[] = recipesResult;
+  const meta: Meta = metaResult;
 
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
@@ -56,13 +51,11 @@ export default async function Home() {
     }));
   }
 
-  if (recipes.length === 0 && meta.difficulties.length === 0) {
+  if (recipes.length === 0) {
     return (
       <div className="min-h-screen bg-background">
         <section className="container mx-auto px-4 py-8 space-y-8">
-          <p className="text-center text-red-500">
-            Impossible de charger les données de la page d&apos;accueil.
-          </p>
+          <p className="text-center">Aucune recette n&apos;est encore disponible.</p>
         </section>
       </div>
     );
