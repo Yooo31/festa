@@ -133,7 +133,6 @@ export default async function RecipePage({ params }: { params: { id: string } })
               src={`/uploads/${recipe.images[0]}` || '/placeholder.svg'}
               alt={recipe.title}
               fill
-              unoptimized
               className="object-cover"
               priority
             />
