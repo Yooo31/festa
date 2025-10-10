@@ -17,6 +17,8 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { getRecipe } from '@/lib/actions/getRecipes';
 import { DeleteRecipeButton } from '@/components/recipes/DeleteRecipeButton';
+import { headers } from 'next/headers';
+import { ShareButton } from '@/components/recipes/ShareButton';
 
 async function checkIsFavorite(userId: string, recipeId: string): Promise<boolean> {
   const favorite = await prisma.favorite.findUnique({
@@ -69,6 +71,11 @@ export default async function RecipePage({ params }: { params: { id: string } })
     initialIsFavorite = await checkIsFavorite(userId, recipeId);
   }
 
+  const headerList = await headers();
+  const host = headerList.get('host');
+  const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
+  const fullUrl = `${protocol}://${host}/recipes/${recipeId}`;
+
   return (
     <div className="min-h-screen bg-background">
       <section className="container mx-auto px-4 py-8">
@@ -81,6 +88,8 @@ export default async function RecipePage({ params }: { params: { id: string } })
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
+                <ShareButton recipeTitle={recipe.title} recipeUrl={fullUrl} />
+
                 <FavoriteButton
                   recipeId={recipeId}
                   initialIsFavorite={initialIsFavorite}
@@ -181,7 +190,4 @@ export default async function RecipePage({ params }: { params: { id: string } })
       </section>
     </div>
   );
-}
-function fetchRecipeFromAction(id: string) {
-  throw new Error('Function not implemented.');
 }
