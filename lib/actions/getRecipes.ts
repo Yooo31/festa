@@ -14,6 +14,36 @@ type UserRecipesResult = {
 };
 
 /**
+ * Récupère toutes les recettes publiques non supprimées.
+ * @returns Une liste de recettes formatées (Recipe[]) ou un objet d'erreur.
+ */
+export async function getAllPublicRecipes(): Promise<Recipe[] | { error: string }> {
+  try {
+    const publicRecipes = await prisma.recipe.findMany({
+      where: {
+        isPublic: true,
+        deletedAt: null,
+      },
+      include: {
+        difficulty: true,
+        duration: true,
+        tags: { include: { tag: true } },
+        ingredients: true,
+        steps: true,
+        images: true,
+        author: { select: { username: true, firstName: true, lastName: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return publicRecipes.map(recipeToDetailedItem);
+  } catch (error) {
+    console.error('Erreur Server Action getAllPublicRecipes:', error);
+    return { error: 'Erreur serveur interne lors du chargement des recettes.' };
+  }
+}
+
+/**
  * Récupère les listes de recettes (toutes, publiques, privées) pour la page de compte utilisateur.
  * @param targetUserId L'ID de l'utilisateur dont on veut voir les recettes.
  * @returns Un objet contenant les trois listes de recettes formatées.
