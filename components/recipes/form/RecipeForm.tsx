@@ -24,23 +24,20 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Plus, X } from 'lucide-react';
 import { ImageDropzone } from '@/components/common/ImageDropzone';
-
-// Suppression de MetaItem et Meta locaux, importés de /lib/types/recipe
+import { updateRecipe, createRecipe } from '@/lib/actions/getRecipes';
 
 interface RecipeFormProps {
   meta: Meta;
-  initialData?: RecipeForForm; // 💡 Rendu optionnel pour la création
+  initialData?: RecipeForForm;
 }
 
 export function RecipeForm({ meta, initialData }: RecipeFormProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
 
-  // 💡 Détermine le mode d'opération
   const isEditing = !!initialData?.id;
   const recipeId = initialData?.id;
 
-  // 💡 Définition des valeurs par défaut
   const defaultValues: RecipeInput = initialData
     ? {
         title: initialData.title,
@@ -102,7 +99,7 @@ export function RecipeForm({ meta, initialData }: RecipeFormProps) {
     try {
       const { images, ...recipeData } = values;
       const imageFile = images?.[0]?.file;
-      let imageUrl = '';
+      let imageUrls: string[] = initialData?.images || [];
 
       if (imageFile) {
         const formData = new FormData();
@@ -119,37 +116,35 @@ export function RecipeForm({ meta, initialData }: RecipeFormProps) {
         }
 
         const uploadData = await uploadRes.json();
-        imageUrl = uploadData.filename;
+        imageUrls = [uploadData.filename];
       }
 
       const payload = {
         ...recipeData,
-        steps: recipeData.steps.map((s, idx) => ({ ...s, order: idx + 1 })),
-        images: imageUrl ? [imageUrl] : [],
+        steps: recipeData.steps.map((s, idx) => ({ content: s.content, order: idx + 1 })),
+        images: imageUrls,
       };
 
-      const apiEndpoint = isEditing ? `/api/recipes/${recipeId}` : '/api/recipes';
-      const httpMethod = isEditing ? 'PATCH' : 'POST';
+      let result: { success: true; recipeId: string } | { error: string };
 
-      const res = await fetch(apiEndpoint, {
-        method: httpMethod,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
+      if (isEditing && recipeId) {
+        result = await updateRecipe(recipeId, payload as Partial<RecipeForForm>);
+      } else {
+        result = await createRecipe(payload as RecipeForForm);
+      }
 
       toast.dismiss();
-      if (!res.ok) {
-        const json = await res.json();
-        throw new Error(
-          json.error ||
-            `Une erreur est survenue lors de la ${isEditing ? 'mise à jour' : 'création'}`,
-        );
+
+      if ('error' in result) {
+        throw new Error(result.error);
       }
+
+      const finalRecipeId = result.recipeId;
 
       toast.success(
         isEditing ? 'Recette mise à jour avec succès ! 💾' : 'Recette publiée avec succès ! 🎉',
       );
-      router.push(isEditing ? `/recipes/${recipeId}` : '/profil');
+      router.push(`/recipes/${finalRecipeId}`);
     } catch (err) {
       toast.dismiss();
       toast.error(err instanceof Error ? err.message : 'Erreur serveur inattendue.');
@@ -215,15 +210,7 @@ export function RecipeForm({ meta, initialData }: RecipeFormProps) {
                 control={control}
                 name="images.0.file"
                 render={({ field, fieldState: { error } }) => (
-                  <ImageDropzone
-                    onChange={field.onChange}
-                    error={getErrorMessage(error)}
-                    // initialPreviewUrl={
-                    //   isEditing && initialData?.images?.[0]
-                    //     ? `/uploads/${initialData.images[0]}`
-                    //     : undefined
-                    // }
-                  />
+                  <ImageDropzone onChange={field.onChange} error={getErrorMessage(error)} />
                 )}
               />
             </div>

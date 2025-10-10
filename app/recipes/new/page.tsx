@@ -1,4 +1,5 @@
 import { RecipeForm } from '@/components/recipes/form/RecipeForm';
+import { getMetaData } from '@/lib/actions/meta';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -6,14 +7,14 @@ export const metadata: Metadata = {
   description: 'Partagez votre propre recette de cuisine avec la communauté FESTA.',
 };
 
-async function getMetaData() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/meta`);
-  if (!res.ok) return { difficulties: [], durations: [], tags: [] };
-  return res.json();
-}
-
 export default async function CreateRecipePage() {
-  const meta = await getMetaData();
+  const result = await getMetaData();
+
+  if ('error' in result) {
+    throw new Error(result.error);
+  }
+
+  const meta = result;
 
   return (
     <div className="min-h-screen bg-background">
