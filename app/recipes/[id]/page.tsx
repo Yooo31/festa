@@ -16,6 +16,7 @@ import { prisma } from '@/lib/prisma';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { getRecipe } from '@/lib/actions/getRecipes';
+import { DeleteRecipeButton } from '@/components/recipes/DeleteRecipeButton';
 
 async function checkIsFavorite(userId: string, recipeId: string): Promise<boolean> {
   const favorite = await prisma.favorite.findUnique({
@@ -80,17 +81,21 @@ export default async function RecipePage({ params }: { params: { id: string } })
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
-                {isAuthor && (
-                  <Button asChild variant="secondary" size="lg">
-                    <Link href={`/recipes/${recipeId}/edit`}>Modifier</Link>
-                  </Button>
-                )}
                 <FavoriteButton
                   recipeId={recipeId}
                   initialIsFavorite={initialIsFavorite}
                   isAuthenticated={isAuthenticated}
                   variant="normal"
                 />
+                {isAuthor && (
+                  <>
+                    <Button asChild variant="secondary" size="lg">
+                      <Link href={`/recipes/${recipeId}/edit`}>Modifier</Link>
+                    </Button>
+
+                    <DeleteRecipeButton recipeId={recipeId} />
+                  </>
+                )}
               </div>
             </div>
 
