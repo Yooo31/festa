@@ -11,6 +11,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { FavoriteButton } from '@/components/recipes/FavoriteButton';
 import { prisma } from '@/lib/prisma';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 async function getRecipe(recipeId: string) {
   const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/recipes/${recipeId}`);
@@ -72,6 +74,8 @@ export default async function RecipePage({ params }: { params: { id: string } })
     initialIsFavorite = await checkIsFavorite(userId!, recipeId);
   }
 
+  const isAuthor = isAuthenticated && userId;
+
   return (
     <div className="min-h-screen bg-background">
       <section className="container mx-auto px-4 py-8">
@@ -83,12 +87,19 @@ export default async function RecipePage({ params }: { params: { id: string } })
                 <p className="text-lg text-muted-foreground text-pretty">{recipe.description}</p>
               </div>
 
-              <FavoriteButton
-                recipeId={recipeId}
-                initialIsFavorite={initialIsFavorite}
-                isAuthenticated={isAuthenticated}
-                variant="normal"
-              />
+              <div className="flex items-center gap-2 shrink-0">
+                {isAuthor && (
+                  <Button asChild variant="outline" size="sm">
+                    <Link href={`/recipes/${recipeId}/edit`}>Modifier</Link>
+                  </Button>
+                )}
+                <FavoriteButton
+                  recipeId={recipeId}
+                  initialIsFavorite={initialIsFavorite}
+                  isAuthenticated={isAuthenticated}
+                  variant="normal"
+                />
+              </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-6">

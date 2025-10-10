@@ -1,18 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { RecipeFilters, type FilterState } from './RecipeFilter';
+import { RecipeFilters } from './RecipeFilter';
 import { ViewToggle } from './ViewToggle';
 import { RecipeCardCompact } from './RecipeCardCompact';
 import { RecipeCardDetailed } from './RecipeCardDetailled';
-import type { RecipeWithStatus } from '@/lib/types/recipe';
-
-type MetaItem = { id: string; name: string };
-type Meta = {
-  difficulties: MetaItem[];
-  durations: MetaItem[];
-  tags: MetaItem[];
-};
+import type { RecipeWithStatus, Meta, FilterState } from '@/lib/types/recipe';
 
 interface RecipeListContainerProps {
   initialRecipes: RecipeWithStatus[];

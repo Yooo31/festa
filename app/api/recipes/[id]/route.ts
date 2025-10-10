@@ -1,6 +1,6 @@
-import { recipeToDetailedItem } from '@/lib/adapters/recipeAdapter';
+import { recipeToDetailedItem, recipeToFormItem } from '@/lib/adapters/recipeAdapter';
 import { prisma } from '@/lib/prisma';
-import { recipeSchema } from '@/lib/validations/recipe';
+import { recipeAPISchema } from '@/lib/validations/recipe';
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
 import { authOptions } from '../../auth/[...nextauth]/route';
@@ -28,16 +28,22 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
       return NextResponse.json({ error: 'Recette introuvable' }, { status: 404 });
     }
 
-    const formattedRecipe = recipeToDetailedItem(recipe);
+    const isAuthor = recipe.authorId === currentUserId;
 
-    if (recipe.isPublic) {
-      return NextResponse.json(formattedRecipe);
+    console.log('###########');
+    console.log(recipe.authorId, '===', session);
+    console.log('###########');
+
+    if (isAuthor) {
+      const formRecipe = recipeToFormItem(recipe);
+      return NextResponse.json(formRecipe);
     }
 
-    if (!currentUserId || recipe.authorId !== currentUserId) {
+    if (!recipe.isPublic) {
       return NextResponse.json({ error: 'Recette privée' }, { status: 403 });
     }
 
+    const formattedRecipe = recipeToDetailedItem(recipe);
     return NextResponse.json(formattedRecipe);
   } catch (error) {
     console.error(error);
@@ -59,12 +65,33 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
 
     const body = await req.json();
-    const parsed = recipeSchema.partial().safeParse(body);
-    if (!parsed.success)
-      return NextResponse.json({ error: parsed.error.format() }, { status: 400 });
+    const parsed = recipeAPISchema.partial().safeParse(body);
 
-    const { title, description, isPublic, difficultyId, durationId, ingredients, steps, tags } =
-      parsed.data;
+    if (!parsed.success) {
+      console.error('Zod Validation Error:', parsed.error.format());
+      return NextResponse.json({ error: parsed.error.format() }, { status: 400 });
+    }
+
+    const {
+      title,
+      description,
+      isPublic,
+      difficultyId,
+      durationId,
+      ingredients,
+      steps,
+      tags,
+      images,
+    } = parsed.data;
+
+    const imageUpdateData = images
+      ? {
+          images: {
+            deleteMany: {},
+            create: images.map((url) => ({ url: url })),
+          },
+        }
+      : {};
 
     const updated = await prisma.recipe.update({
       where: { id: params.id },
@@ -98,6 +125,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
               },
             }
           : {}),
+        ...imageUpdateData,
       },
       include: {
         ingredients: true,
