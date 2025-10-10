@@ -6,30 +6,23 @@ import { RecipeForm } from '@/components/recipes/form/RecipeForm';
 import type { Meta, RecipeForForm } from '@/lib/types/recipe';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
-async function getMetaData(): Promise<Meta> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/meta`);
-  if (!res.ok) {
-    throw new Error('Échec du chargement des métadonnées');
-  }
-  return res.json();
-}
+import { getMetaData } from '@/lib/actions/meta';
+import { getRecipeForm } from '@/lib/actions/getRecipes';
 
-async function getRecipeForEdit(recipeId: string): Promise<RecipeForForm | null> {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/recipes/${recipeId}`, {
-    cache: 'no-store',
-  });
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const result = await getRecipeForm(params.id);
 
-  if (!response.ok) {
-    if (response.status === 404) {
-      return null;
-    }
-    if (response.status === 403) {
-      redirect('/403');
-    }
-    throw new Error(`Erreur lors de la récupération de la recette: ${response.statusText}`);
+  if ('error' in result) {
+    return {
+      title: 'Erreur',
+      description: result.error,
+    };
   }
 
-  return response.json() as Promise<RecipeForForm>;
+  return {
+    title: `Modifier : ${result.title}`,
+    description: `Modifier votre recette "${result.title}" sur FESTA.`,
+  };
 }
 
 export default async function EditRecipePage({ params }: { params: { id: string } }) {
@@ -40,15 +33,24 @@ export default async function EditRecipePage({ params }: { params: { id: string 
     redirect(`/login?callbackUrl=/recipes/${recipeId}/edit`);
   }
 
-  const [recipe, meta] = await Promise.all([getRecipeForEdit(recipeId), getMetaData()]);
+  const [recipeResult, metaResult] = await Promise.all([getRecipeForm(recipeId), getMetaData()]);
 
-  if (!recipe) {
-    notFound();
+  if ('error' in recipeResult) {
+    if (recipeResult.error === 'Recette introuvable') {
+      notFound();
+    }
+    if (recipeResult.error === 'Non autorisé' || recipeResult.error === 'Accès refusé') {
+      redirect('/403');
+    }
+    throw new Error(recipeResult.error);
   }
 
-  if (recipe.authorId !== session.user.id) {
-    redirect('/403');
+  if ('error' in metaResult) {
+    throw new Error(metaResult.error);
   }
+
+  const recipe: RecipeForForm = recipeResult;
+  const meta: Meta = metaResult;
 
   return (
     <div className="min-h-screen bg-background">
@@ -57,19 +59,4 @@ export default async function EditRecipePage({ params }: { params: { id: string 
       </section>
     </div>
   );
-}
-
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const recipe = await getRecipeForEdit(params.id);
-
-  if (!recipe) {
-    return {
-      title: 'Recette introuvable',
-    };
-  }
-
-  return {
-    title: `Modifier : ${recipe.title}`,
-    description: `Modifier votre recette "${recipe.title}" sur FESTA.`,
-  };
 }

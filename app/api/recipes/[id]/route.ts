@@ -1,14 +1,15 @@
 import { recipeToDetailedItem, recipeToFormItem } from '@/lib/adapters/recipeAdapter';
 import { prisma } from '@/lib/prisma';
 import { recipeAPISchema } from '@/lib/validations/recipe';
-import { getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth/next';
 import { NextResponse } from 'next/server';
 import { authOptions } from '../../auth/[...nextauth]/route';
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET({ params }: { params: { id: string } }) {
   try {
-    const recipeId = params.id;
     const session = await getServerSession(authOptions);
+
+    const recipeId = params.id;
     const currentUserId = session?.user?.id;
 
     const recipe = await prisma.recipe.findUnique({
@@ -29,10 +30,6 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
     }
 
     const isAuthor = recipe.authorId === currentUserId;
-
-    console.log('###########');
-    console.log(recipe.authorId, '===', session);
-    console.log('###########');
 
     if (isAuthor) {
       const formRecipe = recipeToFormItem(recipe);

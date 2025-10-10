@@ -1,3 +1,5 @@
+'use server';
+
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
@@ -13,19 +15,7 @@ import { FavoriteButton } from '@/components/recipes/FavoriteButton';
 import { prisma } from '@/lib/prisma';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-
-async function getRecipe(recipeId: string) {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/recipes/${recipeId}`);
-
-  if (!response.ok) {
-    if (response.status === 404 || response.status === 403) {
-      return null;
-    }
-    throw new Error(`Erreur lors de la récupération de la recette: ${response.statusText}`);
-  }
-
-  return response.json();
-}
+import { getRecipe } from '@/lib/actions/getRecipes';
 
 async function checkIsFavorite(userId: string, recipeId: string): Promise<boolean> {
   const favorite = await prisma.favorite.findUnique({
@@ -37,9 +27,9 @@ async function checkIsFavorite(userId: string, recipeId: string): Promise<boolea
 }
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const recipe = await getRecipe(params.id);
+  const result = await getRecipe(params.id);
 
-  if (!recipe) {
+  if ('error' in result) {
     return {
       title: 'Recette Introuvable',
       description: "Désolé, la recette que vous recherchez n'a pas été trouvée.",
@@ -47,11 +37,11 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   }
 
   return {
-    title: recipe.title,
+    title: result.title,
     description:
-      recipe.description || `Découvrez la délicieuse recette de ${recipe.title} sur FESTA.`,
+      result.description || `Découvrez la délicieuse recette de ${result.title} sur FESTA.`,
     openGraph: {
-      images: recipe.images?.length > 0 ? [`/uploads/${recipe.images[0]}`] : undefined,
+      images: result.images?.length > 0 ? [`/uploads/${result.images[0]}`] : undefined,
     },
   };
 }
@@ -59,22 +49,24 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
 export default async function RecipePage({ params }: { params: { id: string } }) {
   const recipeId = params.id;
 
-  const recipe: Recipe & { steps: Step[] } = await getRecipe(recipeId);
+  const result = await getRecipe(recipeId);
 
-  if (!recipe) {
+  if ('error' in result) {
     notFound();
   }
+
+  const recipe: Recipe = result;
 
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
   const isAuthenticated = !!userId;
 
-  let initialIsFavorite = false;
-  if (isAuthenticated) {
-    initialIsFavorite = await checkIsFavorite(userId!, recipeId);
-  }
+  const isAuthor = userId === recipe.authorId;
 
-  const isAuthor = isAuthenticated && userId;
+  let initialIsFavorite = false;
+  if (isAuthenticated && userId) {
+    initialIsFavorite = await checkIsFavorite(userId, recipeId);
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -89,7 +81,7 @@ export default async function RecipePage({ params }: { params: { id: string } })
 
               <div className="flex items-center gap-2 shrink-0">
                 {isAuthor && (
-                  <Button asChild variant="outline" size="sm">
+                  <Button asChild variant="secondary" size="lg">
                     <Link href={`/recipes/${recipeId}/edit`}>Modifier</Link>
                   </Button>
                 )}
@@ -185,4 +177,7 @@ export default async function RecipePage({ params }: { params: { id: string } })
       </section>
     </div>
   );
+}
+function fetchRecipeFromAction(id: string) {
+  throw new Error('Function not implemented.');
 }

@@ -47,12 +47,15 @@ export function recipeToDetailedItem(recipe: RecipeWithAllRelations) {
   return {
     id: recipe.id,
     title: recipe.title,
-    description: recipe.description,
+    description: recipe.description ?? '',
     duration: recipe.duration.name,
     difficulty: recipe.difficulty.name,
     author: authorName,
     isPublic: recipe.isPublic,
-    ingredients: recipe.ingredients,
+    ingredients: recipe.ingredients.map((ing) => ({
+      ...ing,
+      quantity: ing.quantity ?? '',
+    })),
     steps: recipe.steps,
     tags: tags,
     images: images,
@@ -67,7 +70,7 @@ export function recipeToFormItem(recipe: RecipeWithAllRelations): RecipeForForm 
   return {
     id: recipe.id,
     title: recipe.title,
-    description: recipe.description,
+    description: recipe.description ?? '',
     difficultyId: recipe.difficulty.id,
     durationId: recipe.duration.id,
     ingredients: recipe.ingredients.map((i) => ({
