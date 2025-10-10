@@ -3,7 +3,7 @@
 - [x] Ajouter une page 500
 - [x] Ajouter un component de loading
 - [x] Ajouter un component d'erreur
-- [ ] Optimisation des images
+- [x] Optimisation des images
 - [x] SEO Dynamique
 - [x] Server Actions
 
