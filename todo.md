@@ -11,7 +11,7 @@
 
 - [x] Ajouter la possibilité de marquer une recette comme favorite
 - [x] Upload des photos : glissé déposé ou box upload dans public/uploads -> enregistrer en db le nom
-- [ ] Ajouter le bouton Modifier quand c'est notre recette
+- [x] Ajouter le bouton Modifier quand c'est notre recette
 - [ ] Ajouter le bouton Supprimer quand c'est notre recette
 - [ ] Ajouter la pagination sur la liste des recettes
 - [ ] Ajouter une fonctionnalité de partage sur les réseaux sociaux
