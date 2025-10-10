@@ -1,19 +1,21 @@
 import { recipeToDetailedItem, recipeToFormItem } from '@/lib/adapters/recipeAdapter';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { recipeAPISchema } from '@/lib/validations/recipe';
 import { getServerSession } from 'next-auth/next';
-import { NextResponse } from 'next/server';
-import { authOptions } from '../../auth/[...nextauth]/route';
+import { NextRequest, NextResponse } from 'next/server';
+import z from 'zod';
 
-export async function GET({ params }: { params: { id: string } }) {
+export async function GET(req: NextRequest) {
+  const url = new URL(req.url);
+  const id = url.pathname.split('/').pop();
   try {
     const session = await getServerSession(authOptions);
 
-    const recipeId = params.id;
     const currentUserId = session?.user?.id;
 
     const recipe = await prisma.recipe.findUnique({
-      where: { id: recipeId },
+      where: { id: id },
       include: {
         author: { select: { username: true, firstName: true, lastName: true } },
         difficulty: true,
@@ -48,13 +50,15 @@ export async function GET({ params }: { params: { id: string } }) {
   }
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest) {
+  const url = new URL(req.url);
+  const id = url.pathname.split('/').pop();
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
 
     const recipe = await prisma.recipe.findUnique({
-      where: { id: params.id },
+      where: { id: id },
       include: { ingredients: true, steps: true, tags: true },
     });
     if (!recipe) return NextResponse.json({ error: 'Recette introuvable' }, { status: 404 });
@@ -65,8 +69,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     const parsed = recipeAPISchema.partial().safeParse(body);
 
     if (!parsed.success) {
-      console.error('Zod Validation Error:', parsed.error.format());
-      return NextResponse.json({ error: parsed.error.format() }, { status: 400 });
+      console.error('Zod Validation Error:', z.treeifyError(parsed.error));
+      return NextResponse.json({ error: z.treeifyError(parsed.error) }, { status: 400 });
     }
 
     const {
@@ -91,7 +95,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       : {};
 
     const updated = await prisma.recipe.update({
-      where: { id: params.id },
+      where: { id: id },
       data: {
         title,
         description,
@@ -138,17 +142,19 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 }
 
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest) {
+  const url = new URL(req.url);
+  const id = url.pathname.split('/').pop();
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
 
-    const recipe = await prisma.recipe.findUnique({ where: { id: params.id } });
+    const recipe = await prisma.recipe.findUnique({ where: { id: id } });
     if (!recipe) return NextResponse.json({ error: 'Recette introuvable' }, { status: 404 });
     if (recipe.authorId !== session.user.id)
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
 
-    await prisma.recipe.delete({ where: { id: params.id } });
+    await prisma.recipe.delete({ where: { id: id } });
 
     return NextResponse.json({ message: 'Recette supprimée avec succès' });
   } catch (error) {

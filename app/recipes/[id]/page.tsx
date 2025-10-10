@@ -7,10 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Clock, Star, ChefHat } from 'lucide-react';
 
 import type { Recipe } from '@/lib/types/recipe';
-import { Metadata } from 'next';
+import { Metadata, ResolvingMetadata } from 'next';
 
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { FavoriteButton } from '@/components/recipes/FavoriteButton';
 import { prisma } from '@/lib/prisma';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,10 @@ import { getRecipe } from '@/lib/actions/getRecipes';
 import { DeleteRecipeButton } from '@/components/recipes/DeleteRecipeButton';
 import { headers } from 'next/headers';
 import { ShareButton } from '@/components/recipes/ShareButton';
+
+interface RecipePageProps {
+  params: Promise<{ id: string }>;
+}
 
 async function checkIsFavorite(userId: string, recipeId: string): Promise<boolean> {
   const favorite = await prisma.favorite.findUnique({
@@ -29,8 +33,12 @@ async function checkIsFavorite(userId: string, recipeId: string): Promise<boolea
   return !!favorite;
 }
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const result = await getRecipe(params.id);
+export async function generateMetadata(
+  { params }: RecipePageProps,
+  parent: ResolvingMetadata,
+): Promise<Metadata> {
+  const { id } = await params;
+  const result = await getRecipe(id);
 
   if ('error' in result) {
     return {
@@ -49,9 +57,8 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   };
 }
 
-export default async function RecipePage({ params }: { params: { id: string } }) {
-  const recipeId = params.id;
-
+export default async function RecipePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: recipeId } = await params;
   const result = await getRecipe(recipeId);
 
   if ('error' in result) {
@@ -63,7 +70,6 @@ export default async function RecipePage({ params }: { params: { id: string } })
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
   const isAuthenticated = !!userId;
-
   const isAuthor = userId === recipe.authorId;
 
   let initialIsFavorite = false;
@@ -89,7 +95,6 @@ export default async function RecipePage({ params }: { params: { id: string } })
 
               <div className="flex items-center gap-2 shrink-0">
                 <ShareButton recipeTitle={recipe.title} recipeUrl={fullUrl} />
-
                 <FavoriteButton
                   recipeId={recipeId}
                   initialIsFavorite={initialIsFavorite}
@@ -101,7 +106,6 @@ export default async function RecipePage({ params }: { params: { id: string } })
                     <Button asChild variant="secondary" size="lg">
                       <Link href={`/recipes/${recipeId}/edit`}>Modifier</Link>
                     </Button>
-
                     <DeleteRecipeButton recipeId={recipeId} />
                   </>
                 )}
@@ -111,7 +115,6 @@ export default async function RecipePage({ params }: { params: { id: string } })
             <div className="flex flex-wrap items-center gap-6">
               <div className="flex items-center gap-2">
                 <Star className="h-5 w-5 fill-accent text-accent" />
-                {/* <span className="font-semibold text-lg">{recipe.rating}</span> */}
                 <span className="text-muted-foreground">/5</span>
               </div>
               <div className="flex items-center gap-2">

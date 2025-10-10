@@ -1,0 +1,5 @@
+prisma/seed.ts
+node_modules/
+.next/
+dist/
+lib/generated/prisma/*

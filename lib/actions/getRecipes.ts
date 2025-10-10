@@ -1,7 +1,7 @@
 'use server';
 
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { recipeToDetailedItem, recipeToFormItem } from '@/lib/adapters/recipeAdapter';
+import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { Recipe, RecipeForForm } from '@/lib/types/recipe';
 import { getServerSession } from 'next-auth';

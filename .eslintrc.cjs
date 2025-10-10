@@ -8,6 +8,14 @@ module.exports = {
     "next/core-web-vitals",
     "plugin:prettier/recommended"
   ],
+  ignorePatterns: [
+    ".eslintrc.cjs",
+    "prisma/seed.ts",
+    "lib/generated/prisma/**",
+    "node_modules/**",
+    ".next/**",
+    "dist/**"
+  ],
   rules: {
     "prettier/prettier": "error",
     "@typescript-eslint/no-explicit-any": "error",

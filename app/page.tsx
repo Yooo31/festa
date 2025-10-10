@@ -1,7 +1,7 @@
 import { RecipeListContainer } from '@/components/recipes/RecipeListContainer';
 import type { Meta, Recipe, RecipeWithStatus } from '@/lib/types/recipe';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { checkIsFavorite } from '@/lib/actions/favoriteActions';
 import { getAllPublicRecipes } from '@/lib/actions/getRecipes';
 import { getMetaData } from '@/lib/actions/meta';
