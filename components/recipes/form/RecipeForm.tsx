@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import toast from 'react-hot-toast';
 
 import { recipeFormSchema, type RecipeInput } from '@/lib/validations/recipe';
+import type { Meta, RecipeForForm } from '@/lib/types/recipe';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,20 +25,48 @@ import { Switch } from '@/components/ui/switch';
 import { Plus, X } from 'lucide-react';
 import { ImageDropzone } from '@/components/common/ImageDropzone';
 
-type MetaItem = { id: string; name: string };
-export type Meta = {
-  difficulties: MetaItem[];
-  durations: MetaItem[];
-  tags: MetaItem[];
-};
+// Suppression de MetaItem et Meta locaux, importés de /lib/types/recipe
 
-interface CreateRecipeFormProps {
+interface RecipeFormProps {
   meta: Meta;
+  initialData?: RecipeForForm; // 💡 Rendu optionnel pour la création
 }
 
-export function CreateRecipeForm({ meta }: CreateRecipeFormProps) {
+export function RecipeForm({ meta, initialData }: RecipeFormProps) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
+
+  // 💡 Détermine le mode d'opération
+  const isEditing = !!initialData?.id;
+  const recipeId = initialData?.id;
+
+  // 💡 Définition des valeurs par défaut
+  const defaultValues: RecipeInput = initialData
+    ? {
+        title: initialData.title,
+        description: initialData.description,
+        difficultyId: initialData.difficultyId,
+        durationId: initialData.durationId,
+        ingredients: initialData.ingredients.map((i) => ({
+          name: i.name,
+          quantity: i.quantity || '',
+        })),
+        steps: initialData.steps.map((s) => ({ content: s.content, order: s.order })),
+        tags: initialData.tags,
+        images: [{ file: null }],
+        isPublic: initialData.isPublic,
+      }
+    : {
+        title: '',
+        description: '',
+        difficultyId: '',
+        durationId: '',
+        ingredients: [{ name: '', quantity: '' }],
+        steps: [{ content: '', order: 1 }],
+        tags: [],
+        images: [{ file: null }],
+        isPublic: false,
+      };
 
   const {
     control,
@@ -48,17 +77,7 @@ export function CreateRecipeForm({ meta }: CreateRecipeFormProps) {
     formState: { errors, isValid },
   } = useForm<RecipeInput>({
     resolver: zodResolver(recipeFormSchema),
-    defaultValues: {
-      title: '',
-      description: '',
-      difficultyId: '',
-      durationId: '',
-      ingredients: [{ name: '', quantity: '' }],
-      steps: [{ content: '', order: 1 }],
-      tags: [],
-      images: [{ file: null }],
-      isPublic: false,
-    },
+    defaultValues: defaultValues,
     mode: 'onChange',
   });
 
@@ -78,7 +97,7 @@ export function CreateRecipeForm({ meta }: CreateRecipeFormProps) {
 
   const onSubmit = async (values: RecipeInput) => {
     setSubmitting(true);
-    toast.loading('Publication en cours...');
+    toast.loading(isEditing ? 'Mise à jour en cours...' : 'Publication en cours...');
 
     try {
       const { images, ...recipeData } = values;
@@ -109,8 +128,11 @@ export function CreateRecipeForm({ meta }: CreateRecipeFormProps) {
         images: imageUrl ? [imageUrl] : [],
       };
 
-      const res = await fetch('/api/recipes', {
-        method: 'POST',
+      const apiEndpoint = isEditing ? `/api/recipes/${recipeId}` : '/api/recipes';
+      const httpMethod = isEditing ? 'PATCH' : 'POST';
+
+      const res = await fetch(apiEndpoint, {
+        method: httpMethod,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
@@ -118,11 +140,16 @@ export function CreateRecipeForm({ meta }: CreateRecipeFormProps) {
       toast.dismiss();
       if (!res.ok) {
         const json = await res.json();
-        throw new Error(json.error || 'Une erreur est survenue');
+        throw new Error(
+          json.error ||
+            `Une erreur est survenue lors de la ${isEditing ? 'mise à jour' : 'création'}`,
+        );
       }
 
-      toast.success('Recette publiée avec succès ! 🎉');
-      router.push('/profil');
+      toast.success(
+        isEditing ? 'Recette mise à jour avec succès ! 💾' : 'Recette publiée avec succès ! 🎉',
+      );
+      router.push(isEditing ? `/recipes/${recipeId}` : '/profil');
     } catch (err) {
       toast.dismiss();
       toast.error(err instanceof Error ? err.message : 'Erreur serveur inattendue.');
@@ -144,8 +171,14 @@ export function CreateRecipeForm({ meta }: CreateRecipeFormProps) {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold tracking-tight">Créer une recette</h1>
-        <p className="text-muted-foreground mt-2">Partagez votre recette avec la communauté</p>
+        <h1 className="text-4xl font-bold tracking-tight">
+          {isEditing ? `Modifier la recette` : 'Créer une recette'}
+        </h1>
+        <p className="text-muted-foreground mt-2">
+          {isEditing
+            ? 'Mettez à jour les informations de votre recette'
+            : 'Partagez votre recette avec la communauté'}
+        </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
@@ -182,7 +215,15 @@ export function CreateRecipeForm({ meta }: CreateRecipeFormProps) {
                 control={control}
                 name="images.0.file"
                 render={({ field, fieldState: { error } }) => (
-                  <ImageDropzone onChange={field.onChange} error={getErrorMessage(error)} />
+                  <ImageDropzone
+                    onChange={field.onChange}
+                    error={getErrorMessage(error)}
+                    // initialPreviewUrl={
+                    //   isEditing && initialData?.images?.[0]
+                    //     ? `/uploads/${initialData.images[0]}`
+                    //     : undefined
+                    // }
+                  />
                 )}
               />
             </div>
@@ -385,7 +426,13 @@ export function CreateRecipeForm({ meta }: CreateRecipeFormProps) {
             Annuler
           </Button>
           <Button type="submit" className="flex-1" disabled={submitting || !isValid}>
-            {submitting ? 'Publication...' : 'Publier la recette'}
+            {submitting
+              ? isEditing
+                ? 'Mise à jour...'
+                : 'Publication...'
+              : isEditing
+                ? 'Sauvegarder les modifications'
+                : 'Publier la recette'}
           </Button>
         </div>
       </form>

@@ -11,20 +11,13 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
-
-type MetaItem = { id: string; name: string };
+import type { MetaItem, FilterState } from '@/lib/types/recipe';
 
 interface RecipeFiltersProps {
   onFilterChange: (filters: FilterState) => void;
   difficulties: MetaItem[];
   durations: MetaItem[];
   tags: MetaItem[];
-}
-
-export interface FilterState {
-  duration: string;
-  difficulty: string;
-  tags: string[];
 }
 
 export function RecipeFilters({

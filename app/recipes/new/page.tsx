@@ -1,4 +1,4 @@
-import { CreateRecipeForm } from '@/components/recipes/CreateRecipeForm';
+import { RecipeForm } from '@/components/recipes/form/RecipeForm';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -18,7 +18,7 @@ export default async function CreateRecipePage() {
   return (
     <div className="min-h-screen bg-background">
       <section className="container mx-auto px-4 py-8">
-        <CreateRecipeForm meta={meta} />
+        <RecipeForm meta={meta} />
       </section>
     </div>
   );

@@ -74,9 +74,6 @@ export default async function FavoritesPage() {
   const favoriteRecipes: Recipe[] = await fetchFavoriteRecipes();
   const count = favoriteRecipes.length;
 
-  console.log('################');
-  console.log(favoriteRecipes);
-
   return (
     <div className="space-y-8">
       <div>
