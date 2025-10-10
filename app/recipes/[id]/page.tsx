@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Clock, Star, ChefHat } from 'lucide-react';
 
-import type { Recipe, Step } from '@/lib/types/recipe';
+import type { Recipe } from '@/lib/types/recipe';
 import { Metadata } from 'next';
 
 import { getServerSession } from 'next-auth';

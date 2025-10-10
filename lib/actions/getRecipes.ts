@@ -75,7 +75,7 @@ export async function getRecipe(id: string): Promise<Recipe | { error: string }>
     const currentUserId = session?.user?.id;
 
     const recipe = await prisma.recipe.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
       include: {
         author: { select: { username: true, firstName: true, lastName: true } },
         difficulty: true,
@@ -109,7 +109,7 @@ export async function getRecipeForm(id: string): Promise<RecipeForForm | { error
   const currentUserId = session?.user?.id;
 
   const recipe = await prisma.recipe.findUnique({
-    where: { id },
+    where: { id, deletedAt: null },
     include: {
       ingredients: true,
       steps: true,
