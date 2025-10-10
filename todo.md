@@ -3,7 +3,7 @@
 - [x] Ajouter une page 500
 - [x] Ajouter un component de loading
 - [x] Ajouter un component d'erreur
-- [ ] Optimisation des images
+- [x] Optimisation des images
 - [x] SEO Dynamique
 - [x] Server Actions
 
@@ -12,7 +12,7 @@
 - [x] Ajouter la possibilité de marquer une recette comme favorite
 - [x] Upload des photos : glissé déposé ou box upload dans public/uploads -> enregistrer en db le nom
 - [x] Ajouter le bouton Modifier quand c'est notre recette
-- [ ] Ajouter le bouton Supprimer quand c'est notre recette
+- [x] Ajouter le bouton Supprimer quand c'est notre recette
 - [ ] Ajouter la pagination sur la liste des recettes
 - [ ] Ajouter une fonctionnalité de partage sur les réseaux sociaux
 - [ ] Ajouter un système de notation ou de commentaires pour les recettes

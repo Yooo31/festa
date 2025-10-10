@@ -34,6 +34,7 @@ export async function getAllUserRecipes(
     const allRecipes = await prisma.recipe.findMany({
       where: {
         authorId: targetUserId,
+        deletedAt: null,
       },
       include: {
         difficulty: true,
@@ -74,7 +75,7 @@ export async function getRecipe(id: string): Promise<Recipe | { error: string }>
     const currentUserId = session?.user?.id;
 
     const recipe = await prisma.recipe.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
       include: {
         author: { select: { username: true, firstName: true, lastName: true } },
         difficulty: true,
@@ -108,7 +109,7 @@ export async function getRecipeForm(id: string): Promise<RecipeForForm | { error
   const currentUserId = session?.user?.id;
 
   const recipe = await prisma.recipe.findUnique({
-    where: { id },
+    where: { id, deletedAt: null },
     include: {
       ingredients: true,
       steps: true,
@@ -281,6 +282,47 @@ export async function updateRecipe(
     return { success: true, recipeId: id };
   } catch (error) {
     console.error('Erreur Server Action updateRecipe:', error);
+    return { error: 'Erreur serveur interne.' };
+  }
+}
+
+export async function deleteRecipe(
+  recipeId: string,
+): Promise<{ success: true } | { error: string }> {
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id;
+
+  if (!userId) {
+    return { error: 'Non autorisé' };
+  }
+
+  try {
+    const existingRecipe = await prisma.recipe.findUnique({
+      where: { id: recipeId },
+    });
+
+    if (!existingRecipe) {
+      return { error: 'Recette introuvable.' };
+    }
+
+    if (existingRecipe.authorId !== userId) {
+      return { error: 'Non autorisé à supprimer cette recette.' };
+    }
+
+    await prisma.recipe.update({
+      where: { id: recipeId },
+      data: {
+        deletedAt: new Date(),
+      },
+    });
+
+    revalidatePath(`/recipes/${recipeId}`);
+    revalidatePath('/profil');
+    revalidatePath('/');
+
+    return { success: true };
+  } catch (error) {
+    console.error('Erreur Server Action deleteRecipe:', error);
     return { error: 'Erreur serveur interne.' };
   }
 }
