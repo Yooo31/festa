@@ -10,6 +10,7 @@ import { Plus, BookOpen, Heart, Settings } from 'lucide-react';
 import { RecipeCardCompact } from '@/components/recipes/RecipeCardCompact';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Recipe } from '@/lib/types/recipe';
+import { getAllUserRecipes } from '@/lib/actions/getRecipes';
 
 type UserRecipes = {
   all: Recipe[];
@@ -45,24 +46,13 @@ export default function AccountPage() {
     const fetchUserRecipes = async () => {
       setLoadingRecipes(true);
       try {
-        const allRecipesRes = await fetch(`/api/recipes?user=${userId}&public=all`);
-        const privateRecipesRes = await fetch(`/api/recipes?user=${userId}&public=false`);
+        const result = await getAllUserRecipes(userId);
 
-        if (!allRecipesRes.ok || !privateRecipesRes.ok) {
-          throw new Error('Erreur lors de la récupération des recettes utilisateur');
+        if ('error' in result) {
+          throw new Error(result.error);
         }
 
-        const allRecipes: Recipe[] = await allRecipesRes.json();
-        const privateRecipes: Recipe[] = await privateRecipesRes.json();
-        const publicRecipes = allRecipes.filter(
-          (recipe) => !privateRecipes.some((priv) => priv.id === recipe.id),
-        );
-
-        setRecipes({
-          all: allRecipes,
-          public: publicRecipes,
-          private: privateRecipes,
-        });
+        setRecipes(result);
       } catch (err) {
         console.error(err);
         setRecipes({ all: [], public: [], private: [] });
@@ -81,11 +71,13 @@ export default function AccountPage() {
     title,
     description,
     recipeList,
+    isLoading,
   }: {
     id: string;
     title: string;
     description: string;
     recipeList: Recipe[];
+    isLoading: boolean;
   }) => (
     <Card id={id}>
       <CardHeader>
@@ -93,7 +85,14 @@ export default function AccountPage() {
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        {recipeList.length > 0 ? (
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Skeleton className="h-64 w-full" />
+            <Skeleton className="h-64 w-full" />
+            <Skeleton className="h-64 w-full" />
+            <Skeleton className="h-64 w-full" />
+          </div>
+        ) : recipeList.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {recipeList.map((recipe) => (
               <RecipeCardCompact key={recipe.id} recipe={recipe} />
@@ -124,26 +123,8 @@ export default function AccountPage() {
           Vous devez être connecté pour accéder à cette page de compte.
         </p>
         <Button asChild>
-          <Link href="/api/auth/signin">Se connecter</Link>
+          <Link href="/login">Se connecter</Link>
         </Button>
-      </div>
-    );
-  }
-
-  if (loadingRecipes) {
-    return (
-      <div className="min-h-screen bg-background">
-        <section className="container mx-auto px-4 py-8">
-          <div className="max-w-6xl mx-auto space-y-8">
-            <Skeleton className="h-10 w-64" />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Skeleton className="h-28 w-full" />
-              <Skeleton className="h-28 w-full" />
-              <Skeleton className="h-28 w-full" />
-            </div>
-            <Skeleton className="h-96 w-full" />
-          </div>
-        </section>
       </div>
     );
   }
@@ -208,18 +189,21 @@ export default function AccountPage() {
               title="Mes dernières recettes"
               description="Les 4 recettes que vous avez créées le plus récemment."
               recipeList={latestRecipes}
+              isLoading={loadingRecipes}
             />
             <RecipeSection
               id="public"
               title="Mes recettes publiques"
               description="Ces recettes sont visibles par tous les utilisateurs."
               recipeList={recipes.public}
+              isLoading={loadingRecipes}
             />
             <RecipeSection
               id="private"
               title="Mes recettes privées"
               description="Seul vous pouvez voir et modifier ces recettes."
               recipeList={recipes.private}
+              isLoading={loadingRecipes}
             />
           </section>
         </div>

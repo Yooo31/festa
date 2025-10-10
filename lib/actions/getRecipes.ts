@@ -6,6 +6,62 @@ import { prisma } from '@/lib/prisma';
 import { Recipe, RecipeForForm } from '@/lib/types/recipe';
 import { getServerSession } from 'next-auth';
 
+type UserRecipesResult = {
+  all: Recipe[];
+  public: Recipe[];
+  private: Recipe[];
+};
+
+/**
+ * Récupère les listes de recettes (toutes, publiques, privées) pour la page de compte utilisateur.
+ * @param targetUserId L'ID de l'utilisateur dont on veut voir les recettes.
+ * @returns Un objet contenant les trois listes de recettes formatées.
+ */
+export async function getAllUserRecipes(
+  targetUserId: string,
+): Promise<UserRecipesResult | { error: string }> {
+  const session = await getServerSession(authOptions);
+  const currentUserId = session?.user?.id;
+
+  console.log('getAllUserRecipes called for userId:', session);
+
+  if (targetUserId !== currentUserId) {
+    return { error: 'Accès non autorisé aux données de compte.' };
+  }
+
+  try {
+    const allRecipes = await prisma.recipe.findMany({
+      where: {
+        authorId: targetUserId,
+      },
+      include: {
+        difficulty: true,
+        duration: true,
+        tags: { include: { tag: true } },
+        ingredients: true,
+        steps: true,
+        images: true,
+        author: { select: { username: true, firstName: true, lastName: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const allFormatted: Recipe[] = allRecipes.map(recipeToDetailedItem);
+
+    const publicFormatted = allFormatted.filter((recipe) => recipe.isPublic);
+    const privateFormatted = allFormatted.filter((recipe) => !recipe.isPublic);
+
+    return {
+      all: allFormatted,
+      public: publicFormatted,
+      private: privateFormatted,
+    };
+  } catch (error) {
+    console.error('Erreur Server Action getUserRecipesForAccountPage:', error);
+    return { error: 'Erreur serveur interne lors de la récupération des recettes.' };
+  }
+}
+
 /**
  * Récupère les détails d'une recette pour l'affichage.
  * @param id L'ID de la recette.
